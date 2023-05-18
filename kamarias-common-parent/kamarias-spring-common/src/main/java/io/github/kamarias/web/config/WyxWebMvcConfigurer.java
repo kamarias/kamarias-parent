@@ -19,6 +19,7 @@ import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 自定义webMvc配置，使用时需要再包的扫描范围类
@@ -39,7 +40,9 @@ public class WyxWebMvcConfigurer implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         // 重复提交拦截器
-        registry.addInterceptor(repeatSubmitInterceptor).addPathPatterns("/**");
+        if (Objects.nonNull(repeatSubmitInterceptor)){
+            registry.addInterceptor(repeatSubmitInterceptor).addPathPatterns("/**");
+        }
     }
 
     /**
