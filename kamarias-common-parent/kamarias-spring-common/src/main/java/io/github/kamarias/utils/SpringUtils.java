@@ -1,6 +1,6 @@
 package io.github.kamarias.utils;
 
-import com.wyx.common.utils.string.StringUtils;
+import io.github.kamarias.utils.string.StringUtils;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;

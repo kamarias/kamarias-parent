@@ -1,6 +1,6 @@
 package io.github.kamarias.utils.http;
 
-import com.wyx.common.utils.string.StringUtils;
+import io.github.kamarias.utils.string.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

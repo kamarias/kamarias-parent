@@ -46,7 +46,7 @@ public class DistributedLockAspect {
 
     private final LocalVariableTableParameterNameDiscoverer discoverer = new LocalVariableTableParameterNameDiscoverer();
 
-    @Pointcut("@annotation(com.wyx.spring.boot.autoconfigure.annotations.LockAction)")
+    @Pointcut("@annotation(io.github.kamarias.annotations.LockAction)")
     private void lockPoint() {
 
     }

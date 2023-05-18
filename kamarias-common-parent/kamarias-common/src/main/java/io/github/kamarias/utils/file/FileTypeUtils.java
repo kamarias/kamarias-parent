@@ -1,6 +1,8 @@
 package io.github.kamarias.utils.file;
 
-import com.wyx.common.utils.string.StringUtils;
+
+
+import io.github.kamarias.utils.string.StringUtils;
 
 import java.io.File;
 import java.util.ArrayList;

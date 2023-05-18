@@ -1,6 +1,6 @@
 package io.github.kamarias.utils.string;
 
-import com.wyx.common.utils.date.DateUtils;
+import io.github.kamarias.utils.date.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

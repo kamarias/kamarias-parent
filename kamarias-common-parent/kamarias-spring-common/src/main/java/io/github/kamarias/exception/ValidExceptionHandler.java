@@ -1,6 +1,6 @@
 package io.github.kamarias.exception;
 
-import com.wyx.common.dto.ResultDTO;
+import io.github.kamarias.dto.ResultDTO;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;

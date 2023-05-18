@@ -2,11 +2,11 @@ package io.github.kamarias.utils;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.wyx.common.bean.uuid.UuidObject;
-import com.wyx.common.core.cache.RedisCache;
-import com.wyx.common.exception.CustomException;
-import com.wyx.common.properties.TokenProperties;
-import com.wyx.common.utils.http.ServletUtils;
+import io.github.kamarias.cache.RedisCache;
+import io.github.kamarias.exception.CustomException;
+import io.github.kamarias.properties.TokenProperties;
+import io.github.kamarias.utils.http.ServletUtils;
+import io.github.kamarias.uuid.UuidObject;
 import io.jsonwebtoken.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

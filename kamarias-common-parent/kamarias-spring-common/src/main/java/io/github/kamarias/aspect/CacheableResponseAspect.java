@@ -2,10 +2,10 @@ package io.github.kamarias.aspect;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.wyx.common.annotation.CacheableResponse;
-import com.wyx.common.core.cache.RedisCache;
-import com.wyx.common.utils.encrypt.Md5Utils;
-import com.wyx.spring.boot.autoconfigure.lock.DistributedLock;
+import io.github.kamarias.annotation.CacheableResponse;
+import io.github.kamarias.cache.RedisCache;
+import io.github.kamarias.lock.DistributedLock;
+import io.github.kamarias.utils.encrypt.Md5Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -47,7 +47,7 @@ public class CacheableResponseAspect {
         this.distributedLock = distributedLock;
     }
 
-    @Pointcut("@annotation(com.wyx.common.annotation.CacheableResponse)")
+    @Pointcut("@annotation(io.github.kamarias.annotation.CacheableResponse)")
     public void pointcut() {
     }
 

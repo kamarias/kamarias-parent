@@ -1,6 +1,6 @@
 package io.github.kamarias.utils.date;
 
-import com.wyx.common.utils.string.StringUtils;
+import io.github.kamarias.utils.string.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.lang.management.ManagementFactory;

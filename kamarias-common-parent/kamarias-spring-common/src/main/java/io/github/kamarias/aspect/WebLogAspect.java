@@ -1,7 +1,7 @@
 package io.github.kamarias.aspect;
 
 import com.alibaba.fastjson.JSON;
-import com.wyx.common.annotation.WebLog;
+import io.github.kamarias.annotation.WebLog;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
@@ -38,7 +38,7 @@ public class WebLogAspect {
      */
     private final ThreadLocal<String> logContent = new ThreadLocal<>();
 
-    @Pointcut("@annotation(com.wyx.common.annotation.WebLog)")
+    @Pointcut("@annotation(io.github.kamarias.annotation.WebLog)")
     public void webLog() {
     }
 

@@ -1,6 +1,7 @@
 package io.github.kamarias.utils.string;
 
-import com.wyx.common.utils.convert.ConvertUtils;
+
+import io.github.kamarias.utils.convert.ConvertUtils;
 
 /**
  * 字符串占位格式化工具

@@ -1,7 +1,8 @@
 package io.github.kamarias.utils.http;
 
-import com.wyx.common.utils.convert.ConvertUtils;
-import com.wyx.common.utils.string.StringUtils;
+
+import io.github.kamarias.utils.convert.ConvertUtils;
+import io.github.kamarias.utils.string.StringUtils;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;

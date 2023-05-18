@@ -2,9 +2,9 @@ package io.github.kamarias.aspect;
 
 
 import com.google.common.util.concurrent.RateLimiter;
-import com.wyx.common.annotation.TokenBucketLimit;
-import com.wyx.common.utils.encrypt.Md5Utils;
-import com.wyx.common.utils.http.ServletUtils;
+import io.github.kamarias.annotation.TokenBucketLimit;
+import io.github.kamarias.utils.encrypt.Md5Utils;
+import io.github.kamarias.utils.http.ServletUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -36,7 +36,7 @@ public class TokenBucketLimitAspect {
     private final String errResponse = "{\"msg\":\"系统繁忙，请稍后再试\",\"code\":500}";
 
 
-    @Pointcut("@annotation(com.wyx.common.annotation.TokenBucketLimit)")
+    @Pointcut("@annotation(io.github.kamarias.annotation.TokenBucketLimit)")
     public void tokenBucketLimitPointcut() {
     }
 

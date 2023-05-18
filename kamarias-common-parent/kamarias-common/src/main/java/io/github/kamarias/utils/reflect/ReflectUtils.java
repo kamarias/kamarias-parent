@@ -1,4 +1,4 @@
-package io.github.kamarias.utils.reflect;//package com.wyx.common.utils.reflect;
+package io.github.kamarias.utils.reflect;
 //
 //import com.wyx.common.utils.convert.Convert;
 //import com.wyx.common.utils.date.DateUtils;

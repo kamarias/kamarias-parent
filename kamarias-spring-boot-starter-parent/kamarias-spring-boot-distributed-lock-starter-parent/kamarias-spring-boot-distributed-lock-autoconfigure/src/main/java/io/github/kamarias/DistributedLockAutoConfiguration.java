@@ -1,7 +1,8 @@
 package io.github.kamarias;
 
-import com.wyx.spring.boot.autoconfigure.lock.DistributedLock;
-import com.wyx.spring.boot.autoconfigure.lock.RedisDistributedLock;
+
+import io.github.kamarias.lock.DistributedLock;
+import io.github.kamarias.lock.RedisDistributedLock;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;

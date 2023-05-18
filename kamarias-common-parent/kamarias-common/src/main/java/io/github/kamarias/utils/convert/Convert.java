@@ -1,6 +1,7 @@
 package io.github.kamarias.utils.convert;
 
-import com.wyx.common.utils.string.StringUtils;
+
+import io.github.kamarias.utils.string.StringUtils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
