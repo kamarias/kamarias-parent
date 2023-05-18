@@ -7,7 +7,7 @@
     <parent>
         <groupId>io.github.kamarias</groupId>
         <artifactId>kamarias-spring-boot-distributed-lock-starter-parent</artifactId>
-        <version>1.0.0.RELEASE</version>
+        <version>1.0.1.RELEASE</version>
     </parent>
 
     <artifactId>kamarias-spring-boot-distributed-lock-starter</artifactId>
@@ -30,7 +30,7 @@
         <dependency>
             <groupId>io.github.kamarias</groupId>
             <artifactId>kamarias-spring-boot-distributed-lock-autoconfigure</artifactId>
-            <version>1.0.0.RELEASE</version>
+            <version>${parent.version}</version>
         </dependency>
     </dependencies>
 
