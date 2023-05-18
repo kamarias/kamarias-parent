@@ -17,7 +17,6 @@
     <modules>
         <module>kamarias-common-parent</module>
         <module>kamarias-spring-boot-starter-parent</module>
-        <module>kamarias-spring-boot</module>
         <module>kamarias-spring-cloud-parent</module>
     </modules>
 
@@ -203,8 +202,7 @@
                 <executions>
                     <execution>
                         <id>attach-sources</id>
-                        <!-- 执行deploy时打包源码 -->
-                        <!-- <phase>deploy</phase>-->
+                        <phase>deploy</phase>
                         <goals>
                             <goal>jar</goal>
                         </goals>

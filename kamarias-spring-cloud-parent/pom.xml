@@ -19,12 +19,6 @@
     </properties>
 
     <dependencies>
-        <!--        <dependency>-->
-        <!--            <groupId>com.wyx</groupId>-->
-        <!--            <artifactId>wyx-spring-boot</artifactId>-->
-        <!--            <version>1.0.0.RELEASE</version>-->
-        <!--        </dependency>-->
-
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-bootstrap</artifactId>
