@@ -10,7 +10,12 @@
         <version>1.0.0.RELEASE</version>
     </parent>
 
+    <groupId>${parent.groupId}</groupId>
     <artifactId>kamarias-common</artifactId>
+    <packaging>jar</packaging>
+    <version>${parent.version}</version>
+    <name>kamarias-common</name>
+    <description>常用公共类库</description>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>

@@ -14,6 +14,9 @@
     <artifactId>kamarias-parent</artifactId>
     <version>1.0.0.RELEASE</version>
     <packaging>pom</packaging>
+    <name>kamarias-parent</name>
+    <description>依赖管理项目</description>
+
     <modules>
         <module>kamarias-common-parent</module>
         <module>kamarias-spring-boot-starter-parent</module>
@@ -47,22 +50,6 @@
         <jjwt.version>0.9.1</jjwt.version>
         <retrofit.spring.boot.version>2.3.13</retrofit.spring.boot.version>
     </properties>
-
-    <!--  打包送到位置  -->
-    <distributionManagement>
-        <!--
-        <repository>
-            <id>dcb-packaging-releases</id>
-            <name>public</name>
-            <url>https://repo.gogpay.cn/nexus/content/repositories/releases</url>
-        </repository>
-        <snapshotRepository>
-            <id>dcb-packaging-releases</id>
-            <name>Snapshots</name>
-            <url>https://repo.gogpay.cn/nexus/content/repositories/snapshots</url>
-        </snapshotRepository>
-        -->
-    </distributionManagement>
 
     <dependencyManagement>
         <dependencies>
@@ -192,6 +179,50 @@
         </dependencies>
     </dependencyManagement>
 
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
+
+    <!--项目地址-->
+    <url>https://github.com/kamarias/kamarias-parent</url>
+
+    <!--开发者信息-->
+    <developers>
+        <developer>
+            <id>kamarias</id>
+            <name>kamarias</name>
+            <email>309597117@qq.com</email>
+            <roles>
+                <role>Developer</role>
+            </roles>
+            <timezone>+8</timezone>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>https://github.com/kamarias/kamarias-parent.git</connection>
+        <developerConnection>scm:git@github.com:kamarias/kamarias-parent.git</developerConnection>
+        <url>https://github.com/kamarias/kamarias-parent</url>
+    </scm>
+
+    <!--  打包送到位置  -->
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
     <!--打包是附带源码打包-->
     <build>
         <finalName>${project.artifactId}-${project.version}</finalName>
@@ -231,7 +262,59 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
+            <!-- Javadoc -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <show>private</show>
+                    <nohelp>true</nohelp>
+                    <charset>UTF-8</charset>
+                    <encoding>UTF-8</encoding>
+                    <docencoding>UTF-8</docencoding>
+                    <additionalparam>-Xdoclint:none</additionalparam>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- GPG -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.6</version>
+                <executions>
+                    <execution>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--Compiler -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <fork>true</fork>
+                    <verbose>true</verbose>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            <!--Release -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+            </plugin>
         </plugins>
     </build>
-
 </project>
