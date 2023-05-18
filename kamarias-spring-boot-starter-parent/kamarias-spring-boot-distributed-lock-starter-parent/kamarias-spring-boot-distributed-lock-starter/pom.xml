@@ -11,6 +11,11 @@
     </parent>
 
     <artifactId>kamarias-spring-boot-distributed-lock-starter</artifactId>
+    <version>${parent.version}</version>
+    <packaging>jar</packaging>
+    <name>kamarias-spring-boot-distributed-lock-starter</name>
+    <description>分布式锁启动start</description>
+
 
     <properties>
         <module.name>io.github.kamarias.spring.boot.distributed.lock.starter</module.name>
