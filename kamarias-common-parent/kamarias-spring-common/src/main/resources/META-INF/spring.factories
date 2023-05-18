@@ -1,0 +1,10 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+io.github.kamarias.core.cache.RedisCache,\
+io.github.kamarias.aspect.CacheableResponseAspect,\
+io.github.kamarias.aspect.AccessLimitAspect,\
+io.github.kamarias.aspect.WebLogAspect,\
+io.github.kamarias.aspect.TokenBucketLimitAspect,\
+io.github.kamarias.exception.ValidExceptionHandler,\
+io.github.kamarias.thread.ThreadPoolConfigurer,\
+io.github.kamarias.utils.SpringUtils,\
+io.github.kamarias.utils.TokenUtils
