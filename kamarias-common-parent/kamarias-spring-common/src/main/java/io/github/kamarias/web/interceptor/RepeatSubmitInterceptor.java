@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -28,6 +29,7 @@ import java.util.concurrent.TimeUnit;
  * @date 2023/2/1 15:21
  */
 @ConditionalOnBean(RepeatableFilter.class)
+@ConditionalOnClass(HandlerInterceptor.class)
 public class RepeatSubmitInterceptor implements HandlerInterceptor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RepeatSubmitInterceptor.class);
