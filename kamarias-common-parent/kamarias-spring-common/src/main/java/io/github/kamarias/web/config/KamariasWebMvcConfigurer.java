@@ -28,7 +28,7 @@ import java.util.Objects;
  * @date 2023/1/13 9:53
  */
 @ConditionalOnClass(WebMvcConfigurer.class)
-public class WyxWebMvcConfigurer implements WebMvcConfigurer {
+public class KamariasWebMvcConfigurer implements WebMvcConfigurer {
 
     @Resource
     private RepeatSubmitInterceptor repeatSubmitInterceptor;
