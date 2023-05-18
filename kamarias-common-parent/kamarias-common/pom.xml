@@ -11,7 +11,6 @@
     </parent>
 
     <artifactId>kamarias-common</artifactId>
-    <version>${parent.version}</version>
     <packaging>jar</packaging>
     <name>kamarias-common</name>
     <description>常用公共类库</description>

@@ -13,6 +13,8 @@
 
     <artifactId>kamarias-spring-boot-distributed-lock-starter-parent</artifactId>
     <packaging>pom</packaging>
+    <name>kamarias-spring-boot-distributed-lock-starter-parent</name>
+    <description>分布式锁依赖管理</description>
 
     <modules>
         <module>kamarias-spring-boot-distributed-lock-autoconfigure</module>

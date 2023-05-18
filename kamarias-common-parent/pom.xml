@@ -10,7 +10,6 @@
     </parent>
 
     <artifactId>kamarias-common-parent</artifactId>
-    <version>${parent.version}</version>
     <packaging>pom</packaging>
     <name>kamarias-common-parent</name>
     <description>常用公共类库依赖管理</description>

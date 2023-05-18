@@ -10,7 +10,6 @@
     </parent>
 
     <artifactId>kamarias-spring-cloud-parent</artifactId>
-    <version>${parent.version}</version>
     <packaging>pom</packaging>
     <name>kamarias-spring-cloud-parent</name>
     <description>自定义SpringCloud依赖管理</description>

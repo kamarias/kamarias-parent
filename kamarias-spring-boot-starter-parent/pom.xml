@@ -10,7 +10,6 @@
     </parent>
 
     <artifactId>kamarias-spring-boot-starter-parent</artifactId>
-    <version>${parent.version}</version>
     <packaging>pom</packaging>
     <name>kamarias-spring-boot-starter-parent</name>
     <description>自定义SpringBoot依赖管理器</description>

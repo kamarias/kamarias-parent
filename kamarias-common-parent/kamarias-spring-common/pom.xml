@@ -11,7 +11,6 @@
     </parent>
 
     <artifactId>kamarias-spring-common</artifactId>
-    <version>${parent.version}</version>
     <packaging>jar</packaging>
     <name>kamarias-spring-common</name>
     <description>常用Spring公共类库</description>
