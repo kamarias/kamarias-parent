@@ -7,10 +7,13 @@
     <parent>
         <groupId>io.github.kamarias</groupId>
         <artifactId>kamarias-common-parent</artifactId>
-        <version>1.0.0.RELEASE</version>
+        <version>1.0.1.RELEASE</version>
     </parent>
 
     <artifactId>kamarias-common</artifactId>
+    <packaging>jar</packaging>
+    <name>kamarias-common</name>
+    <description>常用公共类库</description>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>

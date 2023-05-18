@@ -8,11 +8,13 @@
     <parent>
         <groupId>io.github.kamarias</groupId>
         <artifactId>kamarias-spring-boot-starter-parent</artifactId>
-        <version>1.0.0.RELEASE</version>
+        <version>1.0.1.RELEASE</version>
     </parent>
 
     <artifactId>kamarias-spring-boot-distributed-lock-starter-parent</artifactId>
     <packaging>pom</packaging>
+    <name>kamarias-spring-boot-distributed-lock-starter-parent</name>
+    <description>分布式锁依赖管理</description>
 
     <modules>
         <module>kamarias-spring-boot-distributed-lock-autoconfigure</module>

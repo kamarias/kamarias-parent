@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+io.github.kamarias.DistributedLockAutoConfiguration,\
+io.github.kamarias.aspect.DistributedLockAspect

@@ -7,10 +7,14 @@
     <parent>
         <groupId>io.github.kamarias</groupId>
         <artifactId>kamarias-common-parent</artifactId>
-        <version>1.0.0.RELEASE</version>
+        <version>1.0.1.RELEASE</version>
     </parent>
 
     <artifactId>kamarias-spring-common</artifactId>
+    <packaging>jar</packaging>
+    <name>kamarias-spring-common</name>
+    <description>常用Spring公共类库</description>
+
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -22,7 +26,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
-            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -34,6 +37,7 @@
             <artifactId>aspectjweaver</artifactId>
             <optional>true</optional>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
@@ -62,11 +66,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
         </dependency>
@@ -74,15 +73,19 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
-            <!--            <scope>compile</scope>-->
-            <!--  该依赖不会向下传递  -->
-            <!--            <optional>true</optional>-->
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <scope>compile</scope>
+            <optional>true</optional>
         </dependency>
 
         <dependency>
             <groupId>io.github.kamarias</groupId>
             <artifactId>kamarias-spring-boot-distributed-lock-starter</artifactId>
-            <version>1.0.0.RELEASE</version>
+            <version>${parent.version}</version>
             <scope>compile</scope>
         </dependency>
 
