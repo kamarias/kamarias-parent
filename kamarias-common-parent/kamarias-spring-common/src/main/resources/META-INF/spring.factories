@@ -7,4 +7,7 @@ io.github.kamarias.aspect.TokenBucketLimitAspect,\
 io.github.kamarias.exception.ValidExceptionHandler,\
 io.github.kamarias.thread.ThreadPoolConfigurer,\
 io.github.kamarias.utils.SpringUtils,\
-io.github.kamarias.utils.TokenUtils
+io.github.kamarias.utils.TokenUtils,\
+io.github.kamarias.web.config.WyxWebMvcConfigurer,\
+io.github.kamarias.web.filter.RepeatableFilter,\
+io.github.kamarias.web.interceptor.RepeatSubmitInterceptor
