@@ -30,7 +30,7 @@ public class CacheableResponseAspect {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CacheableResponseAspect.class);
 
-    @Value("${spring.profiles.active}")
+    @Value("${spring.profiles.active:dev}")
     private String env;
 
     private final String ENV_DEV = "dev";
