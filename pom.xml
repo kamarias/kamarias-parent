@@ -324,6 +324,6 @@
     </build>
     <!--
     参考教程：https://blog.csdn.net/JHIII/article/details/126283440
-    推送命令: mvn clean install deploy -P release
+    推送命令: mvn clean install deploy
      -->
 </project>
