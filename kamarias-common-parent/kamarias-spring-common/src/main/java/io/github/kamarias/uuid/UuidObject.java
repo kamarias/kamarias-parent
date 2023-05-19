@@ -14,18 +14,6 @@ public abstract class UuidObject implements Serializable {
      */
     private String uuid = UUID.randomUUID().toString();
 
-    /**
-     * 令牌剩余多少时间刷新（单位：秒）默认
-     */
-    private long expireTime = 1200;
-
-    public long getExpireTime() {
-        return expireTime;
-    }
-
-    public void setExpireTime(long expireTime) {
-        this.expireTime = expireTime;
-    }
 
     public String getUuid() {
         return uuid;

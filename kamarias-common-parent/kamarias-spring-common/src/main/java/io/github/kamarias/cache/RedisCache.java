@@ -63,6 +63,26 @@ public class RedisCache {
     }
 
     /**
+     * 获取过期时间
+     *
+     * @param key
+     * @return 过期时间
+     */
+    public long getExpireTime(final String key) {
+        return redisTemplate.opsForValue().getOperations().getExpire(key);
+    }
+
+    /**
+     * 获取过期时间（指定单位）
+     *
+     * @param key
+     * @return
+     */
+    public long getExpireTime(final String key, final TimeUnit unit) {
+        return redisTemplate.opsForValue().getOperations().getExpire(key, unit);
+    }
+
+    /**
      * 设置有效时间
      *
      * @param key     Redis键

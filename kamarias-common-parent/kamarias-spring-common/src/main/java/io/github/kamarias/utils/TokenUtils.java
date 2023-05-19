@@ -17,7 +17,14 @@ import org.springframework.context.annotation.Import;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
+import java.util.Objects;
 
+/**
+ * token工具类
+ *
+ * @author wangyuxing@gogpay.cn
+ * @date 2023/2/21 14:53
+ */
 /**
  * token工具类
  *
@@ -40,12 +47,23 @@ public class TokenUtils {
      */
     private final TokenProperties tokenProperties;
 
+    /**
+     * redis key 过期返回值
+     */
+    private final long EXPIRED_VALUE = -2;
+
     public TokenUtils(RedisCache redisCache, TokenProperties tokenProperties) {
         this.redisCache = redisCache;
         this.tokenProperties = tokenProperties;
     }
 
-
+    /**
+     * 创建 token
+     *
+     * @param o   生成的对象
+     * @param <T> 继承UuidObject 的类
+     * @return 返回生成key
+     */
     public <T extends UuidObject> String createRedisToken(T o) {
         // 生成 jwt 密钥
         JwtBuilder jwtBuilder = Jwts.builder();
@@ -55,12 +73,28 @@ public class TokenUtils {
                 .setId(o.getUuid())
                 .signWith(SignatureAlgorithm.HS256, tokenProperties.getSecret())
                 .compact();
-        o.setExpireTime(tokenProperties.getExpireTime());
         // 存入缓存中
         redisCache.setCacheObject(o.getUuid(), o, tokenProperties.getExpireTime(), tokenProperties.getUnit());
         return jwtPassword;
     }
 
+    public <T extends UuidObject> T analyzeRedisToken(Class<T> tClass) {
+        HttpServletRequest request = ServletUtils.getRequest();
+        String header = request.getHeader(tokenProperties.getAuthHeader());
+        if (StringUtils.isEmpty(header)) {
+            LOGGER.error("登录令牌已过期：授权请求头为空");
+            throw new CustomException("登录令牌已过期");
+        }
+        return analyzeRedisToken(header, tClass);
+    }
+
+    /**
+     * 解析 redis
+     * @param str 密钥
+     * @param tClass 序列化的类
+     * @return
+     * @param <T>
+     */
     public <T extends UuidObject> T analyzeRedisToken(String str, Class<T> tClass) {
         String redisUuid = null;
         try {
@@ -68,21 +102,28 @@ public class TokenUtils {
                     .setSigningKey(tokenProperties.getSecret())
                     .parseClaimsJws(removePrefix(str))
                     .getBody().getId();
-        }catch (Exception e){
+        } catch (Exception e) {
             // 移除redis 的缓存
-            //redisCache.deleteObject(redisUuid);
-            // 返回错误信息
+            LOGGER.error("登录令牌已过期：登录令牌解析错误");
+            throw new CustomException("登录令牌错误或已失效");
+        }
+        long expireTime = redisCache.getExpireTime(redisUuid);
+        if (expireTime == EXPIRED_VALUE) {
+            LOGGER.error("登录令牌已过期：令牌过期");
+            throw new CustomException("登录令牌已过期");
         }
         T t = redisCache.getCacheObject(redisUuid);
-
+        if (Objects.isNull(t)) {
+            LOGGER.error("登录令牌已过期：令牌过期");
+            throw new CustomException("登录令牌已过期");
+        }
+        if (tokenProperties.getRefreshDate() >= expireTime) {
+            // 续期token
+            redisCache.deleteObject(redisUuid);
+            redisCache.setCacheObject(redisUuid, t, tokenProperties.getExpireTime(), tokenProperties.getUnit());
+        }
         return t;
     }
-
-
-    private void postponeToken(String redisKey){
-
-    }
-
 
     /**
      * 生成token
@@ -115,7 +156,8 @@ public class TokenUtils {
         HttpServletRequest request = ServletUtils.getRequest();
         String header = request.getHeader(tokenProperties.getAuthHeader());
         if (StringUtils.isEmpty(header)) {
-            throw new RuntimeException("获取请求头异常");
+            LOGGER.error("登录令牌已过期：授权请求头为空");
+            throw new CustomException("登录令牌已过期");
         }
         return analyzeJwtToken(header, tClass);
     }
@@ -154,7 +196,7 @@ public class TokenUtils {
      * @return 返回不带前缀的 token
      */
     private String removePrefix(String token) {
-        if (token.indexOf(tokenProperties.getAuthHeaderPrefix()) != -1) {
+        if (token.contains(tokenProperties.getAuthHeaderPrefix())) {
             return token.replace(tokenProperties.getAuthHeaderPrefix(), "");
         }
         throw new IllegalArgumentException("请求前缀异常");
