@@ -12,7 +12,7 @@
 
     <groupId>io.github.kamarias</groupId>
     <artifactId>kamarias-parent</artifactId>
-    <version>1.0.1.RELEASE</version>
+    <version>1.0.2.RELEASE</version>
     <packaging>pom</packaging>
     <name>kamarias-parent</name>
     <description>依赖管理项目</description>
@@ -242,6 +242,12 @@
                         <phase>deploy</phase>
                         <goals>
                             <goal>jar</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar-no-fork</goal>
                         </goals>
                     </execution>
                 </executions>
