@@ -41,8 +41,8 @@
         <commons.codec.version>1.11</commons.codec.version>
         <commons.collections.version>3.2.2</commons.collections.version>
         <junit.version>4.13</junit.version>
-        <guava.version>24.1-jre</guava.version>
-        <fastjson.version>1.2.67</fastjson.version>
+        <guava.version>31.1-jre</guava.version>
+        <fastjson.version>1.2.83</fastjson.version>
         <hutool.version>5.8.11</hutool.version>
         <zookeeper.version>3.8.0</zookeeper.version>
         <mapstruct.version>1.4.2.Final</mapstruct.version>
@@ -82,6 +82,12 @@
                 <groupId>com.alibaba</groupId>
                 <artifactId>druid-spring-boot-starter</artifactId>
                 <version>${druid.starter.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-collections</groupId>
+                <artifactId>commons-collections</artifactId>
+                <version>${commons.collections.version}</version>
             </dependency>
 
             <!--Mysql 连接驱动-->
