@@ -35,7 +35,7 @@ public class ResultDTO<E> implements Serializable {
      *
      * @return 成功消息
      */
-    public static ResultDTO success() {
+    public static ResultDTO<Object> success() {
         return ResultDTO.success("操作成功");
     }
 
@@ -54,7 +54,7 @@ public class ResultDTO<E> implements Serializable {
      * @param msg 返回内容
      * @return 成功消息
      */
-    public static ResultDTO success(String msg) {
+    public static ResultDTO<Object> success(String msg) {
         return ResultDTO.success(msg, null);
     }
 
@@ -66,7 +66,7 @@ public class ResultDTO<E> implements Serializable {
      * @return 成功消息
      */
     public static <E> ResultDTO<E> success(String msg, E data) {
-        return new ResultDTO(HttpStatus.OK.value(), msg, data);
+        return new ResultDTO<>(HttpStatus.OK.value(), msg, data);
     }
 
     /**
@@ -74,7 +74,7 @@ public class ResultDTO<E> implements Serializable {
      *
      * @return 操作结果
      */
-    public static ResultDTO error() {
+    public static ResultDTO<Object> error() {
         return ResultDTO.error("操作失败");
     }
 
@@ -83,7 +83,7 @@ public class ResultDTO<E> implements Serializable {
      *
      * @param msg 错误信息
      */
-    public static ResultDTO error(String msg) {
+    public static ResultDTO<Object> error(String msg) {
         return ResultDTO.error(msg, null);
     }
 
@@ -94,14 +94,14 @@ public class ResultDTO<E> implements Serializable {
      * @param data 错误数据
      */
     public static <E> ResultDTO<E> error(String msg, E data) {
-        return new ResultDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), msg, data);
+        return new ResultDTO<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), msg, data);
     }
 
     /**
      * 返回未授权错误
      */
-    public static ResultDTO errorOfAuth() {
-        return new ResultDTO(HttpStatus.UNAUTHORIZED.value(), "权限异常", null);
+    public static ResultDTO<Object> errorOfAuth() {
+        return new ResultDTO<>(HttpStatus.UNAUTHORIZED.value(), "权限异常", null);
     }
 
     /**
@@ -110,7 +110,7 @@ public class ResultDTO<E> implements Serializable {
      * @param result 请求结果
      * @return 是否成功
      */
-    public static boolean isSuccess(ResultDTO result) {
+    public static boolean isSuccess(ResultDTO<Object> result) {
         if (result == null || result.getCode() == null) {
             return false;
         }

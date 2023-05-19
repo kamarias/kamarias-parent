@@ -69,7 +69,7 @@ public class AjaxResult<E> extends HashMap<String, Object> implements Serializab
      *
      * @return 成功消息
      */
-    public static AjaxResult success() {
+    public static AjaxResult<Object> success() {
         return AjaxResult.success("操作成功");
     }
 
@@ -88,7 +88,7 @@ public class AjaxResult<E> extends HashMap<String, Object> implements Serializab
      * @param msg 返回内容
      * @return 成功消息
      */
-    public static AjaxResult success(String msg) {
+    public static AjaxResult<Object> success(String msg) {
         return AjaxResult.success(msg, null);
     }
 
@@ -100,7 +100,7 @@ public class AjaxResult<E> extends HashMap<String, Object> implements Serializab
      * @return 成功消息
      */
     public static <E> AjaxResult<E> success(String msg, E data) {
-        return new AjaxResult(HttpStatus.OK.value(), msg, data);
+        return new AjaxResult<>(HttpStatus.OK.value(), msg, data);
     }
 
     /**
@@ -108,7 +108,7 @@ public class AjaxResult<E> extends HashMap<String, Object> implements Serializab
      *
      * @return 操作结果
      */
-    public static AjaxResult error() {
+    public static AjaxResult<Object> error() {
         return AjaxResult.error("操作失败");
     }
 
@@ -117,8 +117,8 @@ public class AjaxResult<E> extends HashMap<String, Object> implements Serializab
      *
      * @return 操作结果
      */
-    public static AjaxResult errorOfAuth() {
-        return new AjaxResult(HttpStatus.UNAUTHORIZED.value(), "认证异常", null);
+    public static AjaxResult<Object> errorOfAuth() {
+        return new AjaxResult<>(HttpStatus.UNAUTHORIZED.value(), "认证异常", null);
     }
 
     /**
@@ -126,8 +126,8 @@ public class AjaxResult<E> extends HashMap<String, Object> implements Serializab
      *
      * @return 操作结果
      */
-    public static AjaxResult errorOfIpError(String msg) {
-        return new AjaxResult(HttpStatus.INTERNAL_SERVER_ERROR.value(), msg, null);
+    public static AjaxResult<Object> errorOfIpError(String msg) {
+        return new AjaxResult<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), msg, null);
     }
 
     /**
@@ -136,7 +136,7 @@ public class AjaxResult<E> extends HashMap<String, Object> implements Serializab
      * @param msg 返回内容
      * @return 警告消息
      */
-    public static AjaxResult error(String msg) {
+    public static AjaxResult<Object> error(String msg) {
         return AjaxResult.error(msg, null);
     }
 
@@ -148,7 +148,7 @@ public class AjaxResult<E> extends HashMap<String, Object> implements Serializab
      * @return 警告消息
      */
     public static <E> AjaxResult<E> error(String msg, E data) {
-        return new AjaxResult(HttpStatus.INTERNAL_SERVER_ERROR.value(), msg, data);
+        return new AjaxResult<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), msg, data);
     }
 
     /**
@@ -158,8 +158,8 @@ public class AjaxResult<E> extends HashMap<String, Object> implements Serializab
      * @param msg  返回内容
      * @return 警告消息
      */
-    public static AjaxResult error(int code, String msg) {
-        return new AjaxResult(code, msg, null);
+    public static AjaxResult<Object> error(int code, String msg) {
+        return new AjaxResult<>(code, msg, null);
     }
 
     /**
@@ -168,7 +168,7 @@ public class AjaxResult<E> extends HashMap<String, Object> implements Serializab
      * @param result 请求结果
      * @return 是否成功
      */
-    public static boolean isSuccess(AjaxResult result) {
+    public static boolean isSuccess(AjaxResult<Object> result) {
         if (result == null || result.get(CODE_TAG) == null) {
             return false;
         }

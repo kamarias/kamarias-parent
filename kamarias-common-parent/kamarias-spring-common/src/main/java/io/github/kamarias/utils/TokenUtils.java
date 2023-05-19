@@ -19,12 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
 import java.util.Objects;
 
-/**
- * token工具类
- *
- * @author wangyuxing@gogpay.cn
- * @date 2023/2/21 14:53
- */
+
 /**
  * token工具类
  *
@@ -78,25 +73,55 @@ public class TokenUtils {
         return jwtPassword;
     }
 
-    public <T extends UuidObject> T analyzeRedisToken(Class<T> tClass) {
+    /**
+     * 创建单点token
+     *
+     * @param o   生成的对象
+     * @param singleKey 用户唯一标识
+     * @param <T> 继承UuidObject 的类
+     * @return 返回生成key
+     */
+    public <T extends UuidObject> String createSingleRedisToken(T o, String singleKey) {
+        // 删除之前存储的key
+        redisCache.deleteObject(singleKey);
+        // 生成 jwt 密钥
+        JwtBuilder jwtBuilder = Jwts.builder();
+        String jwtPassword = jwtBuilder
+                .setHeaderParam("typ", "JWT")
+                .setHeaderParam("alg", "HS256")
+                .setId(o.getUuid())
+                .signWith(SignatureAlgorithm.HS256, tokenProperties.getSecret())
+                .compact();
+        // 删除之前存储的key
+        redisCache.deleteObject(singleKey);
+        // 存入缓存中
+        redisCache.setCacheObject(singleKey, o, tokenProperties.getExpireTime(), tokenProperties.getUnit());
+        return jwtPassword;
+    }
+
+    /**
+     * 解析 redis
+     * @return 解析成功的对象
+     * @param <T> 返回解析后的对象
+     */
+    public <T extends UuidObject> T analyzeRedisToken() {
         HttpServletRequest request = ServletUtils.getRequest();
         String header = request.getHeader(tokenProperties.getAuthHeader());
         if (StringUtils.isEmpty(header)) {
             LOGGER.error("登录令牌已过期：授权请求头为空");
             throw new CustomException("登录令牌已过期");
         }
-        return analyzeRedisToken(header, tClass);
+        return analyzeRedisToken(header);
     }
 
     /**
      * 解析 redis
      * @param str 密钥
-     * @param tClass 序列化的类
-     * @return
-     * @param <T>
+     * @return 解析成功的对象
+     * @param <T> 继承UuidObject的对象
      */
-    public <T extends UuidObject> T analyzeRedisToken(String str, Class<T> tClass) {
-        String redisUuid = null;
+    public <T extends UuidObject> T analyzeRedisToken(String str) {
+        String redisUuid;
         try {
             redisUuid = Jwts.parser()
                     .setSigningKey(tokenProperties.getSecret())
@@ -134,7 +159,7 @@ public class TokenUtils {
      */
     public <T extends UuidObject> String createJwtToken(T o) {
         JwtBuilder jwtBuilder = Jwts.builder();
-        String jwtPassword = jwtBuilder
+        return jwtBuilder
                 .setHeaderParam("typ", "JWT")
                 .setHeaderParam("alg", "HS256")
                 .claim("user", o)
@@ -142,7 +167,6 @@ public class TokenUtils {
                 .setId(o.getUuid())
                 .signWith(SignatureAlgorithm.HS256, tokenProperties.getSecret())
                 .compact();
-        return jwtPassword;
     }
 
     /**
@@ -179,6 +203,7 @@ public class TokenUtils {
         } catch (Exception e) {
             removeToken();
         }
+        assert claimsJws != null;
         Claims body = claimsJws.getBody();
         Date expiration = body.getExpiration();
         Object o = body.get("user");
@@ -207,10 +232,7 @@ public class TokenUtils {
      */
     private boolean expiredCheck(Date expireDate) {
         Date date = new Date(System.currentTimeMillis() + tokenProperties.getRefreshMilliseconds());
-        if (date.before(expireDate)) {
-            return false;
-        }
-        return true;
+        return !date.before(expireDate);
     }
 
     /**

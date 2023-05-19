@@ -27,12 +27,12 @@ public enum SexEnum {
     /**
      * 编码
      */
-    private Integer code;
+    private final Integer code;
 
     /**
      * 中文值
      */
-    private String value;
+    private final String value;
 
 
     SexEnum(Integer code, String value) {
