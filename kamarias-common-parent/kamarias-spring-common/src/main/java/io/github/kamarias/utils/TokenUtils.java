@@ -19,7 +19,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
 import java.util.Objects;
 
-
 /**
  * token工具类
  *
@@ -53,6 +52,71 @@ public class TokenUtils {
     }
 
     /**
+     * 创建单点token
+     *
+     * @param o   生成的对象
+     * @param <T> 继承UuidObject 的类
+     * @param singleKey 用户唯一key（多数情况下可使用用户的id）
+     * @return 返回生成key
+     */
+    public <T extends UuidObject> String createSingleRedisToken(T o, String singleKey) {
+        // 生成 jwt 密钥
+        JwtBuilder jwtBuilder = Jwts.builder();
+        String jwtPassword = jwtBuilder
+                .setHeaderParam("typ", "JWT")
+                .setHeaderParam("alg", "HS256")
+                .setId(o.getUuid())
+                .signWith(SignatureAlgorithm.HS256, tokenProperties.getSecret())
+                .compact();
+        // 存入缓存中
+        redisCache.setCacheObject(o.getUuid(), o, tokenProperties.getExpireTime(), tokenProperties.getUnit());
+        // 设置登录绑定的uuid
+        redisCache.setCacheObject(singleKey, o.getUuid(), tokenProperties.getExpireTime(), tokenProperties.getUnit());
+        return jwtPassword;
+    }
+
+    /**
+     * 解析 redis
+     *
+     * @param tClass    序列化的类
+     * @param singleKey 用户唯一key （多数情况下可使用用户的id）
+     * @param <T> 继承UuidObject的解析对象
+     * @return 解析成功的对象
+     */
+    public <T extends UuidObject> T analyzeSingleRedisToken(String singleKey, Class<T> tClass) {
+        String uuid = redisCache.getCacheObject(singleKey);
+        T token = analyzeRedisToken(tClass);
+        if (token.getUuid().equals(uuid)) {
+            return token;
+        }
+        LOGGER.warn("当前登录账号已在其它地方登录");
+        // 移除之前登录的缓存key
+        redisCache.deleteObject(token.getUuid());
+        throw new CustomException("当前登录账号已在其它地方登录");
+    }
+
+    /**
+     * 解析 redis
+     *
+     * @param str       密钥
+     * @param tClass    序列化的类
+     * @param singleKey 用户唯一key（多数情况下可使用用户的id）
+     * @param <T> 继承UuidObject的解析对象
+     * @return 解析成功的对象
+     */
+    public <T extends UuidObject> T analyzeSingleRedisToken(String str, String singleKey, Class<T> tClass) {
+        String uuid = redisCache.getCacheObject(singleKey);
+        T token = analyzeRedisToken(str, tClass);
+        if (token.getUuid().equals(uuid)) {
+            return token;
+        }
+        LOGGER.warn("当前登录账号已在其它地方登录");
+        // 移除之前登录的缓存key
+        redisCache.deleteObject(token.getUuid());
+        throw new CustomException("当前登录账号已在其它地方登录");
+    }
+
+    /**
      * 创建 token
      *
      * @param o   生成的对象
@@ -74,53 +138,31 @@ public class TokenUtils {
     }
 
     /**
-     * 创建单点token
-     *
-     * @param o   生成的对象
-     * @param singleKey 用户唯一标识
-     * @param <T> 继承UuidObject 的类
-     * @return 返回生成key
-     */
-    public <T extends UuidObject> String createSingleRedisToken(T o, String singleKey) {
-        // 删除之前存储的key
-        redisCache.deleteObject(singleKey);
-        // 生成 jwt 密钥
-        JwtBuilder jwtBuilder = Jwts.builder();
-        String jwtPassword = jwtBuilder
-                .setHeaderParam("typ", "JWT")
-                .setHeaderParam("alg", "HS256")
-                .setId(o.getUuid())
-                .signWith(SignatureAlgorithm.HS256, tokenProperties.getSecret())
-                .compact();
-        // 删除之前存储的key
-        redisCache.deleteObject(singleKey);
-        // 存入缓存中
-        redisCache.setCacheObject(singleKey, o, tokenProperties.getExpireTime(), tokenProperties.getUnit());
-        return jwtPassword;
-    }
-
-    /**
      * 解析 redis
+     *
+     * @param tClass 序列化的类
+     * @param <T> 继承UuidObject的解析对象
      * @return 解析成功的对象
-     * @param <T> 返回解析后的对象
      */
-    public <T extends UuidObject> T analyzeRedisToken() {
+    public <T extends UuidObject> T analyzeRedisToken(Class<T> tClass) {
         HttpServletRequest request = ServletUtils.getRequest();
         String header = request.getHeader(tokenProperties.getAuthHeader());
         if (StringUtils.isEmpty(header)) {
             LOGGER.error("登录令牌已过期：授权请求头为空");
             throw new CustomException("登录令牌已过期");
         }
-        return analyzeRedisToken(header);
+        return analyzeRedisToken(header, tClass);
     }
 
     /**
      * 解析 redis
-     * @param str 密钥
+     *
+     * @param str    密钥
+     * @param tClass 序列化的类
+     * @param <T> 继承UuidObject的解析对象
      * @return 解析成功的对象
-     * @param <T> 继承UuidObject的对象
      */
-    public <T extends UuidObject> T analyzeRedisToken(String str) {
+    public <T extends UuidObject> T analyzeRedisToken(String str, Class<T> tClass) {
         String redisUuid;
         try {
             redisUuid = Jwts.parser()
@@ -137,7 +179,7 @@ public class TokenUtils {
             LOGGER.error("登录令牌已过期：令牌过期");
             throw new CustomException("登录令牌已过期");
         }
-        T t = redisCache.getCacheObject(redisUuid);
+        T t =  redisCache.getCacheObject(redisUuid);
         if (Objects.isNull(t)) {
             LOGGER.error("登录令牌已过期：令牌过期");
             throw new CustomException("登录令牌已过期");
@@ -159,7 +201,7 @@ public class TokenUtils {
      */
     public <T extends UuidObject> String createJwtToken(T o) {
         JwtBuilder jwtBuilder = Jwts.builder();
-        return jwtBuilder
+        String jwtPassword = jwtBuilder
                 .setHeaderParam("typ", "JWT")
                 .setHeaderParam("alg", "HS256")
                 .claim("user", o)
@@ -167,6 +209,7 @@ public class TokenUtils {
                 .setId(o.getUuid())
                 .signWith(SignatureAlgorithm.HS256, tokenProperties.getSecret())
                 .compact();
+        return jwtPassword;
     }
 
     /**
