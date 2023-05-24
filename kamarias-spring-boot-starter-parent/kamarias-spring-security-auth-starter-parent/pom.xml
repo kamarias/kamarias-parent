@@ -3,20 +3,22 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
+
     <parent>
         <groupId>io.github.kamarias</groupId>
-        <artifactId>kamarias-parent</artifactId>
+        <artifactId>kamarias-spring-boot-starter-parent</artifactId>
         <version>1.0.2.RELEASE</version>
     </parent>
 
-    <artifactId>kamarias-spring-boot-starter-parent</artifactId>
+    <artifactId>kamarias-spring-security-auth-starter-parent</artifactId>
     <packaging>pom</packaging>
-    <name>kamarias-spring-boot-starter-parent</name>
-    <description>自定义SpringBoot依赖管理器</description>
+    <name>kamarias-spring-security-auth-starter-parent</name>
+    <description>基于springSecurity的二次封装</description>
 
     <modules>
-        <module>kamarias-spring-boot-distributed-lock-starter-parent</module>
-        <module>kamarias-spring-security-auth-starter-parent</module>
+        <module>kamarias-spring-security-auth-autoconfigure</module>
+        <module>kamarias-spring-security-auth-starter</module>
     </modules>
 
     <properties>
@@ -26,7 +28,5 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
     </properties>
-
-
 
 </project>

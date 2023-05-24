@@ -18,7 +18,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
 import java.util.Objects;
-
 /**
  * token工具类
  *
@@ -54,8 +53,8 @@ public class TokenUtils {
     /**
      * 创建单点token
      *
-     * @param o   生成的对象
-     * @param <T> 继承UuidObject 的类
+     * @param o         生成的对象
+     * @param <T>       继承UuidObject 的类
      * @param singleKey 用户唯一key（多数情况下可使用用户的id）
      * @return 返回生成key
      */
@@ -76,11 +75,34 @@ public class TokenUtils {
     }
 
     /**
+     * 删除token令牌
+     *
+     * @param singleKey 用户唯一key
+     * @return 移除令牌结果
+     */
+    public boolean removeSingleRedisToken(String singleKey) {
+        UuidObject o = analyzeSingleRedisToken(singleKey, UuidObject.class);
+        return redisCache.deleteObject(o.getUuid()) && redisCache.deleteObject(singleKey);
+    }
+
+    /**
+     * 删除token令牌
+     *
+     * @param str       令牌
+     * @param singleKey 用户唯一key
+     * @return 移除令牌结果
+     */
+    public boolean removeSingleRedisToken(String str, String singleKey) {
+        UuidObject o = analyzeSingleRedisToken(str, singleKey, UuidObject.class);
+        return redisCache.deleteObject(o.getUuid()) && redisCache.deleteObject(singleKey);
+    }
+
+    /**
      * 解析 redis
      *
      * @param tClass    序列化的类
      * @param singleKey 用户唯一key （多数情况下可使用用户的id）
-     * @param <T> 继承UuidObject的解析对象
+     * @param <T>       继承UuidObject的解析对象
      * @return 解析成功的对象
      */
     public <T extends UuidObject> T analyzeSingleRedisToken(String singleKey, Class<T> tClass) {
@@ -101,7 +123,7 @@ public class TokenUtils {
      * @param str       密钥
      * @param tClass    序列化的类
      * @param singleKey 用户唯一key（多数情况下可使用用户的id）
-     * @param <T> 继承UuidObject的解析对象
+     * @param <T>       继承UuidObject的解析对象
      * @return 解析成功的对象
      */
     public <T extends UuidObject> T analyzeSingleRedisToken(String str, String singleKey, Class<T> tClass) {
@@ -138,17 +160,38 @@ public class TokenUtils {
     }
 
     /**
+     * 删除token令牌
+     *
+     * @return 移除令牌结果
+     */
+    public boolean removeRedisToken() {
+        UuidObject o = analyzeRedisToken(UuidObject.class);
+        return redisCache.deleteObject(o.getUuid());
+    }
+
+    /**
+     * 删除token令牌
+     *
+     * @param str 令牌
+     * @return 移除令牌结果
+     */
+    public boolean removeRedisToken(String str) {
+        UuidObject o = analyzeRedisToken(str, UuidObject.class);
+        return redisCache.deleteObject(o.getUuid());
+    }
+
+    /**
      * 解析 redis
      *
      * @param tClass 序列化的类
-     * @param <T> 继承UuidObject的解析对象
+     * @param <T>    继承UuidObject的解析对象
      * @return 解析成功的对象
      */
     public <T extends UuidObject> T analyzeRedisToken(Class<T> tClass) {
         HttpServletRequest request = ServletUtils.getRequest();
         String header = request.getHeader(tokenProperties.getAuthHeader());
         if (StringUtils.isEmpty(header)) {
-            LOGGER.error("登录令牌已过期：授权请求头为空");
+            LOGGER.info("登录令牌已过期：授权请求头为空");
             throw new CustomException("登录令牌已过期");
         }
         return analyzeRedisToken(header, tClass);
@@ -159,7 +202,7 @@ public class TokenUtils {
      *
      * @param str    密钥
      * @param tClass 序列化的类
-     * @param <T> 继承UuidObject的解析对象
+     * @param <T>    继承UuidObject的解析对象
      * @return 解析成功的对象
      */
     public <T extends UuidObject> T analyzeRedisToken(String str, Class<T> tClass) {
@@ -171,17 +214,17 @@ public class TokenUtils {
                     .getBody().getId();
         } catch (Exception e) {
             // 移除redis 的缓存
-            LOGGER.error("登录令牌已过期：登录令牌解析错误");
+            LOGGER.info("登录令牌已过期：登录令牌解析错误");
             throw new CustomException("登录令牌错误或已失效");
         }
         long expireTime = redisCache.getExpireTime(redisUuid);
         if (expireTime == EXPIRED_VALUE) {
-            LOGGER.error("登录令牌已过期：令牌过期");
+            LOGGER.info("登录令牌已过期：令牌过期");
             throw new CustomException("登录令牌已过期");
         }
-        T t =  redisCache.getCacheObject(redisUuid);
+        T t = redisCache.getCacheObject(redisUuid);
         if (Objects.isNull(t)) {
-            LOGGER.error("登录令牌已过期：令牌过期");
+            LOGGER.info("登录令牌已过期：令牌过期");
             throw new CustomException("登录令牌已过期");
         }
         if (tokenProperties.getRefreshDate() >= expireTime) {
@@ -223,7 +266,7 @@ public class TokenUtils {
         HttpServletRequest request = ServletUtils.getRequest();
         String header = request.getHeader(tokenProperties.getAuthHeader());
         if (StringUtils.isEmpty(header)) {
-            LOGGER.error("登录令牌已过期：授权请求头为空");
+            LOGGER.info("登录令牌已过期：授权请求头为空");
             throw new CustomException("登录令牌已过期");
         }
         return analyzeJwtToken(header, tClass);
@@ -263,7 +306,7 @@ public class TokenUtils {
      * @param token 带前缀的 token
      * @return 返回不带前缀的 token
      */
-    private String removePrefix(String token) {
+    public String removePrefix(String token) {
         if (token.contains(tokenProperties.getAuthHeaderPrefix())) {
             return token.replace(tokenProperties.getAuthHeaderPrefix(), "");
         }
