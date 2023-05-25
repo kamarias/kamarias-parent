@@ -5,6 +5,7 @@ import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import io.github.kamarias.web.interceptor.RepeatSubmitInterceptor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.MediaType;
@@ -174,6 +175,7 @@ public class KamariasWebMvcConfigurer implements WebMvcConfigurer {
      * 跨域配置
      */
     @Bean
+    @ConditionalOnMissingBean(CorsFilter.class)
     public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
