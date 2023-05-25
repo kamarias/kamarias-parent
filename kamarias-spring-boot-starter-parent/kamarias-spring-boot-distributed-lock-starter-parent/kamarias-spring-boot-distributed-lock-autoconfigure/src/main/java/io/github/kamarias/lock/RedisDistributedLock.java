@@ -1,14 +1,14 @@
 package io.github.kamarias.lock;
 
+import io.github.kamarias.lock.AbstractDistributedLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
+import org.springframework.data.redis.core.script.RedisScript;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 分布式Redis锁具体实现
@@ -33,13 +33,35 @@ public class RedisDistributedLock extends AbstractDistributedLock {
         }
     };
 
+    /**
+     * 加锁lua脚本
+     */
     private static final String LOCK_LUA;
 
+    /**
+     * 解锁lua脚本
+     */
     private static final String UNLOCK_LUA;
 
+    /**
+     * 续期lua脚本
+     */
+    private static final String DELAY_TIME_LUA;
+
+    /**
+     * 加锁lua脚本对象
+     */
     private final DefaultRedisScript<Long> LOCK_LUA_SCRIPT = new DefaultRedisScript<>(LOCK_LUA, Long.class);
 
+    /**
+     * 解锁lua脚本对象
+     */
     private final DefaultRedisScript<Long> UNLOCK_LUA_SCRIPT = new DefaultRedisScript<>(UNLOCK_LUA, Long.class);
+
+    /**
+     * 续期lua脚本对象
+     */
+    private final RedisScript<Long> DELAY_TIME_LUA_SCRIPT = new DefaultRedisScript<>(DELAY_TIME_LUA, Long.class);
 
     static {
         // 加锁成功返回 1，否则返回剩余过期时间
@@ -55,6 +77,12 @@ public class RedisDistributedLock extends AbstractDistributedLock {
                 "else " +
                 "    return 0 " +
                 "end ";
+        DELAY_TIME_LUA = "if redis.call(\"get\",KEYS[1]) == ARGV[1] " +
+                "then " +
+                "return redis.call(\"pexpire\", KEYS[1], tonumber(ARGV[2]))" +
+                "else" +
+                "  return 0 " +
+                "end";
     }
 
     public RedisDistributedLock(StringRedisTemplate redisTemplate) {
@@ -85,9 +113,17 @@ public class RedisDistributedLock extends AbstractDistributedLock {
             String uuid = UUID.randomUUID().toString();
             Map<String, String> lockMap = context.get();
             lockMap.put(key, uuid);
-            Long result = this.redisTemplate.execute(LOCK_LUA_SCRIPT, Collections.singletonList(key), uuid, String.valueOf(expire));
+            Long result = this.redisTemplate.execute(LOCK_LUA_SCRIPT,
+                    Collections.singletonList(key),
+                    uuid,
+                    String.valueOf(expire == -1L ? 30000 : expire));
             // 等于 1 才能算加锁成功
-            return result != null && result.equals(1L);
+            boolean res = result != null && result.equals(1L);
+            if (res && expire == -1L) {
+                // 自动延时
+                delayLockTime(key, uuid, 30000);
+            }
+            return res;
         } catch (Exception e) {
             LOGGER.error("set redis occurred an exception", e);
         }
@@ -103,11 +139,34 @@ public class RedisDistributedLock extends AbstractDistributedLock {
             return result != null && result > 0;
         } catch (Exception e) {
             LOGGER.error("release lock occurred an exception", e);
-        }finally {
+        } finally {
             // 移除线程变量
             context.remove();
         }
         return false;
+    }
+
+    /**
+     * 续期锁方法
+     *
+     * @param key    锁的名字
+     * @param value  锁的值
+     * @param expire 过期时间
+     */
+    private void delayLockTime(final String key, final String value, final long expire) {
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                Long result = redisTemplate.execute(DELAY_TIME_LUA_SCRIPT,
+                        Collections.singletonList(key),
+                        value, String.valueOf(expire));
+                LOGGER.info("update lock time, lock name: {}", key);
+                if (result != null && result.equals(1L)) {
+                    // 等于1 监听下一次续期
+                    delayLockTime(key, value, expire);
+                }
+            }
+        }, expire / 3);
     }
 
 }
