@@ -1,6 +1,7 @@
 package io.github.kamarias.dto;
 
-import com.alibaba.fastjson.JSONObject;
+
+import com.alibaba.fastjson2.JSONObject;
 import org.springframework.http.HttpStatus;
 
 import java.io.Serializable;

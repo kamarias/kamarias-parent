@@ -1,6 +1,6 @@
 package io.github.kamarias.handler;
 
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSON;
 import io.github.kamarias.dto.ResultDTO;
 import io.github.kamarias.utils.http.ServletUtils;
 import io.github.kamarias.utils.string.StringUtils;

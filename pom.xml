@@ -42,7 +42,7 @@
         <commons.collections.version>3.2.2</commons.collections.version>
         <junit.version>4.13</junit.version>
         <guava.version>31.1-jre</guava.version>
-        <fastjson.version>1.2.83</fastjson.version>
+        <fastjson2.version>2.0.33</fastjson2.version>
         <hutool.version>5.8.11</hutool.version>
         <zookeeper.version>3.8.0</zookeeper.version>
         <mapstruct.version>1.4.2.Final</mapstruct.version>
@@ -133,10 +133,11 @@
                 <version>${guava.version}</version>
             </dependency>
 
+
             <dependency>
-                <groupId>com.alibaba</groupId>
-                <artifactId>fastjson</artifactId>
-                <version>${fastjson.version}</version>
+                <groupId>com.alibaba.fastjson2</groupId>
+                <artifactId>fastjson2</artifactId>
+                <version>${fastjson2.version}</version>
             </dependency>
 
             <!--HuTool工具包-->
