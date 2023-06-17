@@ -93,6 +93,7 @@
             <artifactId>fastjson</artifactId>
             <version>1.2.83_noneautotype</version>
             <scope>compile</scope>
+            <optional>true</optional>
         </dependency>
 
 
