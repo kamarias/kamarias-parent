@@ -1,7 +1,7 @@
 package io.github.kamarias.filter;
 
 import io.github.kamarias.utils.TokenUtils;
-import io.github.kamarias.uuid.UuidObject;
+import io.github.kamarias.uuid.LoginObject;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -29,9 +29,9 @@ public class DefaultJwtAuthTokenFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
-        UuidObject token = null;
+        LoginObject token = null;
         try {
-            token = tokenUtils.analyzeRedisToken(UuidObject.class);
+            token = tokenUtils.analyzeToken(LoginObject.class);
         } catch (Exception e) {
         }
         if (Objects.isNull(token)) {
@@ -49,7 +49,7 @@ public class DefaultJwtAuthTokenFilter extends OncePerRequestFilter {
      * @param o   继承UuidObject的对象实体
      * @param <T> 继承UuidObject的泛型
      */
-    private <T extends UuidObject> void authorize(T o) {
+    private <T extends LoginObject> void authorize(T o) {
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(o, null, null));
     }

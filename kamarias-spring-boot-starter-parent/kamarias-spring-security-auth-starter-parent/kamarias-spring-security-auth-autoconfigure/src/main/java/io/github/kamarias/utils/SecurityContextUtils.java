@@ -1,6 +1,6 @@
 package io.github.kamarias.utils;
 
-import io.github.kamarias.uuid.UuidObject;
+import io.github.kamarias.uuid.LoginObject;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
@@ -10,7 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
  */
 public class SecurityContextUtils {
 
-    public static <T extends UuidObject> T getLoginUser() {
+    public static <T extends LoginObject> T getLoginUser() {
         return (T) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 

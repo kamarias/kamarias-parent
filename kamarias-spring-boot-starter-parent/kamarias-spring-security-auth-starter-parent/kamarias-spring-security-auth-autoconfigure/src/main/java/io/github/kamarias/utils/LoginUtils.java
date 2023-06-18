@@ -1,6 +1,6 @@
 package io.github.kamarias.utils;
 
-import io.github.kamarias.uuid.UuidObject;
+import io.github.kamarias.uuid.LoginObject;
 
 /**
  * 登录工具类，用于获取登录的用户信息
@@ -22,8 +22,8 @@ public class LoginUtils {
      * @param <T> 继承UuidObject的泛型
      * @return 返回登录的用户
      */
-    public <T extends UuidObject> T getLoginUser() {
-        return (T) tokenUtils.analyzeRedisToken(UuidObject.class);
+    public <T extends LoginObject> T getLoginUser() {
+        return (T) tokenUtils.analyzeRedisToken(LoginObject.class);
     }
 
     /**
@@ -33,8 +33,8 @@ public class LoginUtils {
      * @param <T> 继承UuidObject的泛型
      * @return 返回登录的用户
      */
-    public <T extends UuidObject> T getLoginUser(String str) {
-        return (T) tokenUtils.analyzeRedisToken(str, UuidObject.class);
+    public <T extends LoginObject> T getLoginUser(String str) {
+        return (T) tokenUtils.analyzeRedisToken(str, LoginObject.class);
     }
 
 }
