@@ -10,4 +10,6 @@ io.github.kamarias.utils.SpringUtils,\
 io.github.kamarias.utils.TokenUtils,\
 io.github.kamarias.web.config.KamariasWebMvcConfigurer,\
 io.github.kamarias.web.filter.RepeatableFilter,\
-io.github.kamarias.web.interceptor.RepeatSubmitInterceptor
+io.github.kamarias.web.interceptor.RepeatSubmitInterceptor,\
+io.github.kamarias.config.CorsFilterConfig,\
+io.github.kamarias.config.redis.RedisSerializerConfig

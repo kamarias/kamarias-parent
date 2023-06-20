@@ -2,6 +2,7 @@ package io.github.kamarias.config;
 
 import io.github.kamarias.filter.DefaultJwtAuthTokenFilter;
 import io.github.kamarias.properties.SecurityProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -9,6 +10,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
@@ -77,4 +79,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.addFilterAfter(defaultJwtAuthTokenFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterAfter(corsFilter, DefaultJwtAuthTokenFilter.class);
     }
+
+    /**
+     * 强散列哈希加密实现
+     */
+    @Bean
+    public BCryptPasswordEncoder bCryptPasswordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
 }
