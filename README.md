@@ -87,3 +87,7 @@
 
 
 更多使用细节可参考各个模块下的`readme`
+
+
+
+该项目的功能已在 `https://github.com/kamarias/architecture-template`使用。
