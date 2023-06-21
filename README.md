@@ -90,4 +90,4 @@
 
 
 
-该项目的功能已在 `https://github.com/kamarias/architecture-template`使用。
+该项目的功能已在  `https://github.com/kamarias/architecture-template` 使用。
