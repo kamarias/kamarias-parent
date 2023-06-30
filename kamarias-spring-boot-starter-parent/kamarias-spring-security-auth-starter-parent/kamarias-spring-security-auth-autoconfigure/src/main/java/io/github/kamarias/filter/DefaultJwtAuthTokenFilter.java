@@ -1,6 +1,8 @@
 package io.github.kamarias.filter;
 
+import io.github.kamarias.properties.SecurityProperties;
 import io.github.kamarias.utils.TokenUtils;
+import io.github.kamarias.utils.http.ServletUtils;
 import io.github.kamarias.uuid.LoginObject;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,24 +25,32 @@ public class DefaultJwtAuthTokenFilter extends OncePerRequestFilter {
 
     private final TokenUtils tokenUtils;
 
-    public DefaultJwtAuthTokenFilter(TokenUtils tokenUtils) {
+    private final SecurityProperties securityProperties;
+
+    public DefaultJwtAuthTokenFilter(TokenUtils tokenUtils, SecurityProperties securityProperties) {
         this.tokenUtils = tokenUtils;
+        this.securityProperties = securityProperties;
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
         LoginObject token = null;
-        try {
-            token = tokenUtils.analyzeToken(LoginObject.class);
-        } catch (Exception e) {
-        }
-        if (Objects.isNull(token)) {
-            // 不给授权，直接放行（会被授权拦截器拦截）
+        // 白名单不解析
+        if (securityProperties.getAnonymous().contains(ServletUtils.getNotContextPathRequestURI(request))) {
             chain.doFilter(request, response);
-            return;
+        } else {
+            try {
+                token = tokenUtils.analyzeToken(LoginObject.class);
+            } catch (Exception e) {
+            }
+            if (Objects.isNull(token)) {
+                // 不给授权，直接放行（会被授权拦截器拦截）
+                chain.doFilter(request, response);
+            } else {
+                authorize(token);
+                chain.doFilter(request, response);
+            }
         }
-        authorize(token);
-        chain.doFilter(request, response);
     }
 
     /**

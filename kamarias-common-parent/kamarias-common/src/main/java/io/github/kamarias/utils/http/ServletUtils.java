@@ -120,5 +120,15 @@ public class ServletUtils {
         return false;
     }
 
+    /**
+     * 获取不包含请求上下文的请求路径
+     * @param request  请求Severlet
+     * @return 返回请求路径
+     */
+    public static String getNotContextPathRequestURI(HttpServletRequest request){
+        String contextPath = request.getContextPath();
+        String requestURI = request.getRequestURI();
+        return requestURI.substring(contextPath.length());
+    }
 
 }
