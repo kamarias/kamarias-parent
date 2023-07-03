@@ -35,7 +35,7 @@ public class DefaultLogoutSuccessHandler implements LogoutSuccessHandler {
     @Override
     public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
         try {
-            tokenUtils.removeRedisToken();
+            tokenUtils.deleteToken();
         } catch (CustomException e) {
             LOGGER.error(e.getMessage());
         }
