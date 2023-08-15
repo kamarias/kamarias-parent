@@ -1,6 +1,6 @@
 package io.github.kamarias.aspect;
 
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSON;
 import io.github.kamarias.annotation.WebLog;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;

@@ -1,6 +1,6 @@
 package io.github.kamarias.thread;
 
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONObject;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**

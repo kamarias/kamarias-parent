@@ -1,6 +1,6 @@
 package io.github.kamarias.properties;
 
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONObject;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.io.Serializable;
@@ -21,6 +21,10 @@ public class TokenProperties implements Serializable {
      */
     private String secret = "S4yHQTz2mvCi";
 
+    /**
+     * 是否开启单浏览器登陆
+     */
+    private boolean singlePoint = false;
 
     /**
      * 授权请求头
@@ -105,6 +109,14 @@ public class TokenProperties implements Serializable {
 
     public long getRefreshDate() {
         return refreshDate;
+    }
+
+    public boolean isSinglePoint() {
+        return singlePoint;
+    }
+
+    public void setSinglePoint(boolean singlePoint) {
+        this.singlePoint = singlePoint;
     }
 
     public void setRefreshDate(long refreshDate) {

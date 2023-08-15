@@ -1,6 +1,6 @@
 package io.github.kamarias.web.interceptor;
 
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONObject;
 import io.github.kamarias.cache.RedisCache;
 import io.github.kamarias.utils.http.ServletUtils;
 import io.github.kamarias.utils.string.StringUtils;

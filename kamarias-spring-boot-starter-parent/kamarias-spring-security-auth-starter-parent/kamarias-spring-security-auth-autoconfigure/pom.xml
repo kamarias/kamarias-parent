@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.github.kamarias</groupId>
+        <artifactId>kamarias-spring-security-auth-starter-parent</artifactId>
+        <version>1.0.3.RELEASE</version>
+    </parent>
+
+    <artifactId>kamarias-spring-security-auth-autoconfigure</artifactId>
+    <packaging>jar</packaging>
+    <name>kamarias-spring-security-auth-autoconfigure</name>
+    <description>security-auth二次封装自动配置</description>
+
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>io.github.kamarias</groupId>
+            <artifactId>kamarias-common</artifactId>
+            <version>${parent.version}</version>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>io.github.kamarias</groupId>
+            <artifactId>kamarias-spring-common</artifactId>
+            <version>${parent.version}</version>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>

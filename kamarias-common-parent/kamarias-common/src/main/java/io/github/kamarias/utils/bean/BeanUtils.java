@@ -57,17 +57,17 @@ public class BeanUtils  extends org.springframework.beans.BeanUtils {
      */
     private static final String FLAG_PATTERN = "Flag";
 
-    private static Map<Integer,String> flag2StringMap = new HashMap();
-    private static Map<String,Integer> string2flagMap = new HashMap();
+    private static final Map<Integer,String> FLAG2_STRING_MAP = new HashMap<>();
+    private static final Map<String,Integer> STRING2FLAG_MAP = new HashMap<>();
 
     static {
-        flag2StringMap.put(1,"是");
-        flag2StringMap.put(0,"否");
-        flag2StringMap.put(2,"未填写");
+        FLAG2_STRING_MAP.put(1,"是");
+        FLAG2_STRING_MAP.put(0,"否");
+        FLAG2_STRING_MAP.put(2,"未填写");
 
-        string2flagMap.put("是",1);
-        string2flagMap.put("否",0);
-        string2flagMap.put("未填写",2);
+        STRING2FLAG_MAP.put("是",1);
+        STRING2FLAG_MAP.put("否",0);
+        STRING2FLAG_MAP.put("未填写",2);
 
     }
 
@@ -151,7 +151,7 @@ public class BeanUtils  extends org.springframework.beans.BeanUtils {
 
                             // 如果类型是整型 使用字典赋值
                             if(value.getClass() == Integer.class){
-                                String strValue = flag2StringMap.get(value);
+                                String strValue = FLAG2_STRING_MAP.get(value);
                                 if(strValue!=null){
                                     writeMethod.invoke(target, strValue);
                                 }
@@ -310,9 +310,7 @@ public class BeanUtils  extends org.springframework.beans.BeanUtils {
                                     }
                                 }
                             }
-                        } catch (IllegalAccessException e) {
-                            e.printStackTrace();
-                        } catch (InvocationTargetException e) {
+                        } catch (IllegalAccessException | InvocationTargetException e) {
                             e.printStackTrace();
                         }
                     }
