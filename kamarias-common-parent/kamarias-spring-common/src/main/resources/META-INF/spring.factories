@@ -2,14 +2,12 @@ org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
 io.github.kamarias.cache.RedisCache,\
 io.github.kamarias.aspect.CacheableResponseAspect,\
 io.github.kamarias.aspect.AccessLimitAspect,\
-io.github.kamarias.aspect.WebLogAspect,\
+io.github.kamarias.web.aspect.WebLogAspect,\
 io.github.kamarias.aspect.TokenBucketLimitAspect,\
 io.github.kamarias.exception.ValidExceptionHandler,\
 io.github.kamarias.thread.ThreadPoolConfigurer,\
 io.github.kamarias.utils.SpringUtils,\
-io.github.kamarias.utils.TokenUtils,\
 io.github.kamarias.web.config.KamariasWebMvcConfigurer,\
 io.github.kamarias.web.filter.RepeatableFilter,\
 io.github.kamarias.web.interceptor.RepeatSubmitInterceptor,\
-io.github.kamarias.config.CorsFilterConfig,\
 io.github.kamarias.config.redis.RedisSerializerConfig

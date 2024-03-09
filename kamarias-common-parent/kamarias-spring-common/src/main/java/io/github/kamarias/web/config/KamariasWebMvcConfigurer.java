@@ -182,7 +182,8 @@ public class KamariasWebMvcConfigurer implements WebMvcConfigurer {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
         // 设置访问源地址
-        config.addAllowedOrigin("*");
+        // config.addAllowedOrigin("*");
+        config.addAllowedOriginPattern("*");
         // 设置访问源请求头
         config.addAllowedHeader("*");
         // 设置访问源请求方法

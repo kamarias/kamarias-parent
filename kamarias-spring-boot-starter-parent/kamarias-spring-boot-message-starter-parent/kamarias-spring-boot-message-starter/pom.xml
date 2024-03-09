@@ -1,0 +1,32 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>io.github.kamarias</groupId>
+        <artifactId>kamarias-spring-boot-message-starter-parent</artifactId>
+        <version>1.0.3.RELEASE</version>
+    </parent>
+
+    <artifactId>kamarias-spring-boot-message-starter</artifactId>
+    <packaging>jar</packaging>
+    <name>kamarias-spring-boot-message-starter</name>
+    <description>springboot 消息事件启动start</description>
+
+
+    <properties>
+        <module.name>io.github.kamarias.spring.boot.message.starter</module.name>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.github.kamarias</groupId>
+            <artifactId>kamarias-spring-boot-message-starter-autoconfigure</artifactId>
+            <version>${parent.version}</version>
+        </dependency>
+    </dependencies>
+</project>

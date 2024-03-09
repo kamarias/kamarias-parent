@@ -1,4 +1,4 @@
-package io.github.kamarias.annotation;
+package io.github.kamarias.web.annotation;
 
 import org.springframework.core.annotation.AliasFor;
 
