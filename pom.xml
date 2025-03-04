@@ -4,15 +4,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.6.10</version>
-    </parent>
-
     <groupId>io.github.kamarias</groupId>
     <artifactId>kamarias-parent</artifactId>
-    <version>1.0.3.RELEASE</version>
+    <version>${application.version</version>
+
     <packaging>pom</packaging>
     <name>kamarias-parent</name>
     <description>依赖管理项目</description>
@@ -24,6 +19,7 @@
     </modules>
 
     <properties>
+        <application.version>2.0.0-SNAPSHOT</application.version>
         <java.version>1.8</java.version>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
@@ -53,6 +49,25 @@
 
     <dependencyManagement>
         <dependencies>
+
+            <dependency>
+                <groupId>io.github.kamarias</groupId>
+                <artifactId>kamarias-common-parent</artifactId>
+                <version>${application.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.github.kamarias</groupId>
+                <artifactId>kamarias-spring-boot-starter-parent</artifactId>
+                <version>${application.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.github.kamarias</groupId>
+                <artifactId>kamarias-spring-cloud-parent</artifactId>
+                <version>${application.version}</version>
+            </dependency>
+
             <!--SpringBoot 依赖-->
             <dependency>
                 <groupId>org.springframework.boot</groupId>

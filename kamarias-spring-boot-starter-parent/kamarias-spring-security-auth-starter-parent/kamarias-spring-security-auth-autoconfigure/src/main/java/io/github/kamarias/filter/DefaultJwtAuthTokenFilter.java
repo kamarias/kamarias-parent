@@ -1,9 +1,9 @@
 package io.github.kamarias.filter;
 
+import io.github.kamarias.bean.LoginObject;
 import io.github.kamarias.properties.SecurityProperties;
 import io.github.kamarias.utils.TokenUtils;
 import io.github.kamarias.utils.http.ServletUtils;
-import io.github.kamarias.uuid.LoginObject;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;

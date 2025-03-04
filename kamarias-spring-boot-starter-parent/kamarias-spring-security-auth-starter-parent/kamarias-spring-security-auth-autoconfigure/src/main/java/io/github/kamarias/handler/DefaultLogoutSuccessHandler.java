@@ -15,6 +15,7 @@ import org.springframework.security.web.authentication.logout.LogoutSuccessHandl
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * @author wangyuxing@gogpay.cn
@@ -37,10 +38,28 @@ public class DefaultLogoutSuccessHandler implements LogoutSuccessHandler {
         try {
             tokenUtils.deleteToken();
         } catch (CustomException e) {
-            LOGGER.error(e.getMessage());
+
         }
-        ServletUtils.renderString(response, JSON.toJSONString(new ResultDTO<>(HttpStatus.OK.value(),
-                StringUtils.format("退出成功"))));
+
+        renderString(response, "{\"code\": 200, \"msg\": \"退出登录成功\"}");
+    }
+
+
+    /**
+     * 将字符串渲染到客户端
+     *
+     * @param response 渲染对象
+     * @param string   待渲染的字符串
+     */
+    private static void renderString(HttpServletResponse response, String string) {
+        try {
+            response.setStatus(200);
+            response.setContentType("application/json");
+            response.setCharacterEncoding("utf-8");
+            response.getWriter().print(string);
+        } catch (IOException e) {
+            LOGGER.error("rewrite response request data failed", e);
+        }
     }
 
 }

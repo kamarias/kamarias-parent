@@ -1,6 +1,7 @@
 package io.github.kamarias.utils;
 
-import io.github.kamarias.uuid.LoginObject;
+
+import io.github.kamarias.bean.LoginObject;
 
 /**
  * 登录工具类，用于获取登录的用户信息

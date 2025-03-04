@@ -1,4 +1,4 @@
-package io.github.kamarias.uuid;
+package io.github.kamarias.bean;
 
 import java.io.Serializable;
 import java.util.Set;

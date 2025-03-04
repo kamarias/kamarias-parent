@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -45,8 +46,8 @@ public class RepeatSubmitInterceptor implements HandlerInterceptor {
     @Value("${token.header:cppMv4C6cjZqZWQVBrws}")
     private String header;
 
-    @Resource
-    private RedisCache redisCache;
+
+    private final StringRedisTemplate redisTemplate;
 
     @Value("${spring.application.name:app}")
     private String APP_NAME;
@@ -60,6 +61,10 @@ public class RepeatSubmitInterceptor implements HandlerInterceptor {
      * 两次相同参数的请求，如果间隔时间大于该参数，系统不会认定为重复提交的数据
      */
     private int intervalTime = 10;
+
+    public RepeatSubmitInterceptor(StringRedisTemplate redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
 
     public void setIntervalTime(int intervalTime) {
         this.intervalTime = intervalTime;
@@ -109,11 +114,11 @@ public class RepeatSubmitInterceptor implements HandlerInterceptor {
         }
         // 唯一标识（指定key + 消息头）
         String cacheRepeatKey = APP_NAME + ":" + REPEAT_SUBMIT + submitKey;
-        Object sessionObj = redisCache.getCacheObject(cacheRepeatKey);
-        if (sessionObj != null) {
-            Map<String, Object> sessionMap = JSONObject.parseObject((String) sessionObj, Map.class);
+        String sessionObj = redisTemplate.opsForValue().get(cacheRepeatKey);
+        if (org.springframework.util.StringUtils.hasLength(sessionObj)) {
+            JSONObject sessionMap = JSONObject.parseObject(sessionObj);
             if (sessionMap.containsKey(url)) {
-                Map<String, Object> preDataMap = (Map<String, Object>) sessionMap.get(url);
+                JSONObject preDataMap =  sessionMap.getJSONObject(url);
                 if (compareParams(nowDataMap, preDataMap) && compareTime(nowDataMap, preDataMap)) {
                     return true;
                 }
@@ -121,7 +126,7 @@ public class RepeatSubmitInterceptor implements HandlerInterceptor {
         }
         Map<String, Object> cacheMap = new HashMap<>();
         cacheMap.put(url, nowDataMap);
-        redisCache.setCacheObject(cacheRepeatKey, JSONObject.toJSONString(cacheMap), intervalTime, TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set(cacheRepeatKey, JSONObject.toJSONString(cacheMap), intervalTime, TimeUnit.SECONDS);
         return false;
     }
 

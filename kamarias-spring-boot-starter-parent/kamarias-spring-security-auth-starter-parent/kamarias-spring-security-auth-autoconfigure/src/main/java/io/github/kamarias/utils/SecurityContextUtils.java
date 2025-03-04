@@ -1,6 +1,6 @@
 package io.github.kamarias.utils;
 
-import io.github.kamarias.uuid.LoginObject;
+import io.github.kamarias.bean.LoginObject;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 /**

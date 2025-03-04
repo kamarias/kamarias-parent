@@ -1,6 +1,5 @@
 package io.github.kamarias.properties;
 
-import com.alibaba.fastjson2.JSON;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.Arrays;
@@ -25,11 +24,6 @@ public class SecurityProperties {
      */
     private List<String> staticResPath = Arrays.asList("/*.html", "/**/*.html", "/**/*.css", "/**/*.js");
 
-
-    @Override
-    public String toString() {
-        return JSON.toJSONString(this);
-    }
 
     public List<String> getAnonymous() {
         return anonymous;

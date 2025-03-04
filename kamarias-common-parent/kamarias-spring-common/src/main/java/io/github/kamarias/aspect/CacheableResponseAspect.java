@@ -15,6 +15,7 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -22,6 +23,7 @@ import java.util.List;
 
 /**
  * 缓存注解切面
+ *
  * @author wangyuxing@gogpay.cn
  * @date 2023/1/28 15:51
  */
@@ -35,15 +37,16 @@ public class CacheableResponseAspect {
 
     private final String ENV_DEV = "dev";
 
-    private final RedisCache redisCache;
+
+    private final StringRedisTemplate stringRedisTemplate;
 
     private final DistributedLock distributedLock;
 
     @Value("${spring.application.name:app}")
     private String APP_NAME;
 
-    public CacheableResponseAspect(RedisCache redisCache, DistributedLock distributedLock) {
-        this.redisCache = redisCache;
+    public CacheableResponseAspect(StringRedisTemplate stringRedisTemplate, DistributedLock distributedLock) {
+        this.stringRedisTemplate = stringRedisTemplate;
         this.distributedLock = distributedLock;
     }
 
@@ -68,12 +71,12 @@ public class CacheableResponseAspect {
             distributedLock.lock(lockKey);
             // 返回类型
             final Class<?> returnClass = Class.forName(method.getGenericReturnType().getTypeName());
-            final String cacheDataString = this.redisCache.getCacheObject(cacheKey);
+            final String cacheDataString = this.stringRedisTemplate.opsForValue().get(cacheKey);
             if (StringUtils.isNotBlank(cacheDataString) && returnClass != null) {
                 // 返回缓存数据
                 LOGGER.info("从redis获取到接口数据：{}，key={}", cacheDataString, cacheKey);
                 return JSONObject.parseObject(cacheDataString, returnClass);
-            }else {
+            } else {
                 LOGGER.info("没有从redis获取到接口数据。开始执行接口{}逻辑...", methodFullName);
                 final long start = System.currentTimeMillis();
                 Object proceed = pjp.proceed();
@@ -81,11 +84,11 @@ public class CacheableResponseAspect {
                 // 写入缓存
                 final String response = JSON.toJSONString(proceed);
                 CacheableResponse annotation = method.getAnnotation(CacheableResponse.class);
-                this.redisCache.setCacheObject(cacheKey, response, annotation.expireTime(), annotation.unit());
+                this.stringRedisTemplate.opsForValue().set(cacheKey, response, annotation.expireTime(), annotation.unit());
                 LOGGER.info("已将接口{}返回数据放入redis。data={}，key={}", methodFullName, response, cacheKey);
                 return proceed;
             }
-        }finally {
+        } finally {
             distributedLock.releaseLock(lockKey);
         }
     }

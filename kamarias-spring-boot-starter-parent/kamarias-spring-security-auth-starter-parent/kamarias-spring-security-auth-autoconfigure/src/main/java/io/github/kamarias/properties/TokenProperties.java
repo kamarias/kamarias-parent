@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Token属性配置类
+ *
  * @author wangyuxing@gogpay.cn
  * @date 2023/2/24 17:31
  */
@@ -58,16 +59,17 @@ public class TokenProperties implements Serializable {
 
     /**
      * 获取令牌刷新的毫秒数
+     *
      * @return
      */
-    public long getRefreshMilliseconds(){
+    public long getRefreshMilliseconds() {
         return TimeUnit.SECONDS.toMillis(this.refreshDate);
     }
 
     /**
      * 获取过期的毫秒
      */
-    public long getExpiredMilliseconds(){
+    public long getExpiredMilliseconds() {
         return this.unit.toMillis(this.expireTime);
     }
 
@@ -135,8 +137,4 @@ public class TokenProperties implements Serializable {
         this.unit = unit;
     }
 
-    @Override
-    public String toString() {
-        return JSONObject.toJSONString(this);
-    }
 }
