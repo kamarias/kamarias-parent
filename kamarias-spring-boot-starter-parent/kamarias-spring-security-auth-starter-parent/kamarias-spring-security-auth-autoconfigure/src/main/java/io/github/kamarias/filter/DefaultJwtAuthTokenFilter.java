@@ -3,7 +3,6 @@ package io.github.kamarias.filter;
 import io.github.kamarias.bean.LoginObject;
 import io.github.kamarias.properties.SecurityProperties;
 import io.github.kamarias.utils.TokenUtils;
-import io.github.kamarias.utils.http.ServletUtils;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -36,7 +35,11 @@ public class DefaultJwtAuthTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
         LoginObject token = null;
         // 白名单不解析
-        if (securityProperties.getAnonymous().contains(ServletUtils.getNotContextPathRequestURI(request))) {
+
+        String contextPath = request.getContextPath();
+        String requestURI = request.getRequestURI();
+        String requestPath = requestURI.substring(contextPath.length());
+        if (securityProperties.getAnonymous().contains(requestPath)) {
             chain.doFilter(request, response);
         } else {
             try {

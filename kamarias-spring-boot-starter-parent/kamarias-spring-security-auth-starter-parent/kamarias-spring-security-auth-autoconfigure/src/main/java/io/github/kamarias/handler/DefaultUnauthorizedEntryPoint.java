@@ -1,18 +1,14 @@
 package io.github.kamarias.handler;
 
-import com.alibaba.fastjson2.JSON;
-import io.github.kamarias.dto.ResultDTO;
-import io.github.kamarias.utils.http.ServletUtils;
-import io.github.kamarias.utils.string.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * 默认的
@@ -28,9 +24,26 @@ public class DefaultUnauthorizedEntryPoint implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) {
         LOGGER.warn("请求路径：{}，权限不允许", request.getRequestURI());
-        ServletUtils.renderString(response,
-                JSON.toJSONString(new ResultDTO<>(HttpStatus.UNAUTHORIZED.value(),
-                        StringUtils.format("请求路径：{}，认证失败", request.getRequestURI()))));
+        String error = "请求路径：" + request.getRequestURI() + "，认证失败";
+        renderString(response,
+                "{\"code\": 401, \"msg\": " + "\"" + error + "\"}");
     }
 
+
+    /**
+     * 将字符串渲染到客户端
+     *
+     * @param response 渲染对象
+     * @param string   待渲染的字符串
+     */
+    private static void renderString(HttpServletResponse response, String string) {
+        try {
+            response.setStatus(200);
+            response.setContentType("application/json");
+            response.setCharacterEncoding("utf-8");
+            response.getWriter().print(string);
+        } catch (IOException e) {
+            LOGGER.error("rewrite response request data failed", e);
+        }
+    }
 }

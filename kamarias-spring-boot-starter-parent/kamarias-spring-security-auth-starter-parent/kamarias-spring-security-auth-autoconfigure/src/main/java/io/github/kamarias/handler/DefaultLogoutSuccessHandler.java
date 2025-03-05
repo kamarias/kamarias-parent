@@ -1,15 +1,10 @@
 package io.github.kamarias.handler;
 
-import com.alibaba.fastjson2.JSON;
-import io.github.kamarias.dto.ResultDTO;
-import io.github.kamarias.exception.CustomException;
+import io.github.kamarias.exception.SecurityException;
 import io.github.kamarias.utils.TokenUtils;
-import io.github.kamarias.utils.http.ServletUtils;
-import io.github.kamarias.utils.string.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
@@ -37,7 +32,7 @@ public class DefaultLogoutSuccessHandler implements LogoutSuccessHandler {
     public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
         try {
             tokenUtils.deleteToken();
-        } catch (CustomException e) {
+        } catch (SecurityException e) {
 
         }
 

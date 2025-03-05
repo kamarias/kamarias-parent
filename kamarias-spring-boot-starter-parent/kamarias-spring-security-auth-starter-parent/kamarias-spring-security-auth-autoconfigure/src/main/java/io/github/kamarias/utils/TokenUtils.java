@@ -1,12 +1,8 @@
 package io.github.kamarias.utils;
 
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONObject;
 import io.github.kamarias.bean.LoginObject;
-import io.github.kamarias.cache.RedisCache;
-import io.github.kamarias.exception.CustomException;
+import io.github.kamarias.exception.SecurityException;
 import io.github.kamarias.properties.TokenProperties;
-import io.github.kamarias.utils.http.ServletUtils;
 import io.jsonwebtoken.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,13 +14,11 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.swing.*;
 import java.util.Date;
 import java.util.Objects;
 
@@ -203,7 +197,7 @@ public class TokenUtils {
         LOGGER.warn("当前登录账号已在其它地方登录");
         // 移除之前登录的缓存key
         stringRedisTemplate.delete(loginKeyGenerator(token.getUuid()));
-        throw new CustomException("当前登录账号已在其它地方登录");
+        throw new SecurityException("当前登录账号已在其它地方登录");
     }
 
     /**
@@ -223,7 +217,7 @@ public class TokenUtils {
         LOGGER.warn("当前登录账号已在其它地方登录");
         // 移除之前登录的缓存key
         stringRedisTemplate.delete(loginKeyGenerator(token.getUuid()));
-        throw new CustomException("当前登录账号已在其它地方登录");
+        throw new SecurityException("当前登录账号已在其它地方登录");
     }
 
     /**
@@ -243,7 +237,7 @@ public class TokenUtils {
                 .signWith(SignatureAlgorithm.HS256, tokenProperties.getSecret())
                 .compact();
         // 存入缓存中
-        stringRedisTemplate.opsForValue().set(loginKeyGenerator(o.getUuid()), o, tokenProperties.getExpireTime(), tokenProperties.getUnit());
+        redisTemplate.opsForValue().set(loginKeyGenerator(o.getUuid()), o, tokenProperties.getExpireTime(), tokenProperties.getUnit());
         return jwtPassword;
     }
 
@@ -279,7 +273,7 @@ public class TokenUtils {
         String header = getHttpServletRequest().getHeader(tokenProperties.getAuthHeader());
         if (StringUtils.isEmpty(header)) {
             LOGGER.info("登录令牌已过期：授权请求头为空");
-            throw new CustomException("登录令牌已过期");
+            throw new SecurityException("登录令牌已过期");
         }
         return analyzeRedisToken(header, tClass);
     }
@@ -302,19 +296,19 @@ public class TokenUtils {
         } catch (Exception e) {
             // 移除redis 的缓存
             LOGGER.info("登录令牌已过期：登录令牌解析错误");
-            throw new CustomException("登录令牌错误或已失效");
+            throw new SecurityException("登录令牌错误或已失效");
         }
         redisUuid = loginKeyGenerator(redisUuid);
         long expireTime = redisTemplate.opsForValue().getOperations().getExpire(redisUuid);
         if (expireTime == EXPIRED_VALUE) {
             LOGGER.info("登录令牌已过期：令牌过期");
-            throw new CustomException("登录令牌已过期");
+            throw new SecurityException("登录令牌已过期");
         }
         ValueOperations<String, T> valueOperations = redisTemplate.opsForValue();
         T t = valueOperations.get(redisUuid);
         if (Objects.isNull(t)) {
             LOGGER.info("登录令牌已过期：令牌过期");
-            throw new CustomException("登录令牌已过期");
+            throw new SecurityException("登录令牌已过期");
         }
         if (tokenProperties.getRefreshDate() >= expireTime) {
             // 续期token
@@ -354,7 +348,7 @@ public class TokenUtils {
         String header = getHttpServletRequest().getHeader(tokenProperties.getAuthHeader());
         if (StringUtils.isEmpty(header)) {
             LOGGER.info("登录令牌已过期：授权请求头为空");
-            throw new CustomException("登录令牌已过期");
+            throw new SecurityException("登录令牌已过期");
         }
         return analyzeJwtToken(header, tClass);
     }
@@ -425,7 +419,7 @@ public class TokenUtils {
     private void removeToken() {
         // 响应头中添加新的请求头
         getHttpServletResponse().addHeader("refresh_token", "");
-        throw new CustomException("登录令牌错误或已失效");
+        throw new SecurityException("登录令牌错误或已失效");
     }
 
     /**

@@ -7,15 +7,24 @@ package io.github.kamarias.exception;
  */
 public class SecurityException extends RuntimeException {
 
-    private final Integer code = 401;
+
+    private Integer code;
 
     public SecurityException(String msg) {
         super(msg);
+    }
+
+    public SecurityException(Integer code, String msg) {
+        super(msg);
+        this.code = code;
     }
 
     public Integer getCode() {
         return code;
     }
 
+    public void setCode(Integer code) {
+        this.code = code;
+    }
 
 }

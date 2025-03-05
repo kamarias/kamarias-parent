@@ -4,7 +4,7 @@ package io.github.kamarias.aspect;
 import io.github.kamarias.annotation.RequiresPermissions;
 import io.github.kamarias.annotation.RequiresRoles;
 import io.github.kamarias.enums.LogicalEnum;
-import io.github.kamarias.exception.CustomException;
+import io.github.kamarias.exception.SecurityException;
 import io.github.kamarias.utils.SecurityContextUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -45,7 +45,7 @@ public class AuthorizeVerificationAspect {
     public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
         Method method = ((MethodSignature) joinPoint.getSignature()).getMethod();
         if (Objects.isNull(SecurityContextUtils.getLoginUser())) {
-            throw new CustomException("用户未登录");
+            throw new SecurityException("用户未登录");
         }
         // 顺序不能乱，应该先角色在权限
         RequiresRoles requiresRoles = AnnotationUtils.getAnnotation(method, RequiresRoles.class);
@@ -61,6 +61,7 @@ public class AuthorizeVerificationAspect {
 
     /**
      * 校验角色
+     *
      * @param requiresRoles 权限注解
      */
     private void checkRole(RequiresRoles requiresRoles) {
@@ -73,6 +74,7 @@ public class AuthorizeVerificationAspect {
 
     /**
      * 校验权限
+     *
      * @param requiresPermissions 权限注解
      */
     private void checkPermissions(RequiresPermissions requiresPermissions) {
@@ -93,7 +95,7 @@ public class AuthorizeVerificationAspect {
         for (String role : roles) {
             if (!hasRole(role, rolesList)) {
                 LOGGER.warn("校验角色异常：{}", roles);
-                throw new CustomException("角色异常");
+                throw new SecurityException("角色异常");
             }
         }
     }
@@ -108,7 +110,7 @@ public class AuthorizeVerificationAspect {
         for (String permission : permissions) {
             if (!hasPermissions(permission, permissionsList)) {
                 LOGGER.warn("校验权限异常：{}", permission);
-                throw new CustomException("权限异常");
+                throw new SecurityException("权限异常");
             }
         }
     }
@@ -127,7 +129,7 @@ public class AuthorizeVerificationAspect {
         }
         if (roles.length > 0) {
             LOGGER.warn("校验角色异常：{}", roles);
-            throw new CustomException("角色异常");
+            throw new SecurityException("角色异常");
         }
     }
 
@@ -145,7 +147,7 @@ public class AuthorizeVerificationAspect {
         }
         if (permissions.length > 0) {
             LOGGER.warn("校验权限异常：{}", permissions);
-            throw new CustomException("权限异常");
+            throw new SecurityException("权限异常");
         }
     }
 
