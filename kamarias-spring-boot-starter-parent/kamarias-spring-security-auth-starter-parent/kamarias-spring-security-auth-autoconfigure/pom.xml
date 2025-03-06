@@ -7,7 +7,7 @@
     <parent>
         <groupId>io.github.kamarias</groupId>
         <artifactId>kamarias-spring-security-auth-starter-parent</artifactId>
-        <version>${application.version}</version>
+        <version>2.0.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>kamarias-spring-security-auth-autoconfigure</artifactId>
@@ -48,7 +48,6 @@
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
-            <scope>provided</scope>
         </dependency>
 
     </dependencies>

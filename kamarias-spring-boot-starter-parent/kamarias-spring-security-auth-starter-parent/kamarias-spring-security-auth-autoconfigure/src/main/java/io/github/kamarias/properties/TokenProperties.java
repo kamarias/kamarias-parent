@@ -54,7 +54,7 @@ public class TokenProperties implements Serializable {
     /**
      * 令牌剩余多少时间刷新（单位：秒）
      */
-    private long refreshDate = 60;
+    private long refreshDate = 300;
 
     /**
      * 获取令牌刷新的毫秒数

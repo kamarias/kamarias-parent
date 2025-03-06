@@ -6,4 +6,5 @@ io.github.kamarias.handler.DefaultUnauthorizedEntryPoint,\
 io.github.kamarias.handler.DefaultUserDetailsService,\
 io.github.kamarias.properties.SecurityProperties,\
 io.github.kamarias.utils.LoginUtils,\
+io.github.kamarias.utils.TokenUtils,\
 io.github.kamarias.aspect.AuthorizeVerificationAspect

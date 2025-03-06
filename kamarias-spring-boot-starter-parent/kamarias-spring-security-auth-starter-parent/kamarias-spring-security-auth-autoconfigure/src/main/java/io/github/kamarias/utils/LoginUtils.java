@@ -24,7 +24,7 @@ public class LoginUtils {
      * @return 返回登录的用户
      */
     public <T extends LoginObject> T getLoginUser() {
-        return (T) tokenUtils.analyzeRedisToken(LoginObject.class);
+        return (T) tokenUtils.analyzeToken(LoginObject.class);
     }
 
     /**
@@ -35,7 +35,7 @@ public class LoginUtils {
      * @return 返回登录的用户
      */
     public <T extends LoginObject> T getLoginUser(String str) {
-        return (T) tokenUtils.analyzeRedisToken(str, LoginObject.class);
+        return (T) tokenUtils.analyzeToken(str, LoginObject.class);
     }
 
 }

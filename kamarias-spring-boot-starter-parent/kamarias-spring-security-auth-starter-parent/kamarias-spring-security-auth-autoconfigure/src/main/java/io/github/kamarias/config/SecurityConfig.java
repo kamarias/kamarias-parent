@@ -15,7 +15,11 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.util.Assert;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
+
+import javax.servlet.Filter;
+import java.util.List;
 
 /**
  * @author wangyuxing@gogpay.cn
@@ -34,12 +38,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final SecurityProperties securityProperties;
 
-    private final CorsFilter corsFilter;
 
     public SecurityConfig(AuthenticationEntryPoint authenticationEntryPoint,
-                          LogoutSuccessHandler logoutSuccessHandler, DefaultJwtAuthTokenFilter defaultJwtAuthTokenFilter, SecurityProperties securityProperties, CorsFilter corsFilter) {
+                          LogoutSuccessHandler logoutSuccessHandler, DefaultJwtAuthTokenFilter defaultJwtAuthTokenFilter, SecurityProperties securityProperties) {
         this.securityProperties = securityProperties;
-        this.corsFilter = corsFilter;
         Assert.notNull(authenticationEntryPoint, "authenticationEntryPoint must not be null");
         Assert.notNull(logoutSuccessHandler, "logoutSuccessHandler must not be null");
         Assert.notNull(defaultJwtAuthTokenFilter, "defaultJwtAuthTokenFilter must not be null");
@@ -77,15 +79,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.logout().logoutSuccessHandler(logoutSuccessHandler);
         // 授权过滤器
         http.addFilterAfter(defaultJwtAuthTokenFilter, UsernamePasswordAuthenticationFilter.class);
-        http.addFilterAfter(corsFilter, DefaultJwtAuthTokenFilter.class);
     }
 
-    /**
-     * 强散列哈希加密实现
-     */
-    @Bean
-    public BCryptPasswordEncoder bCryptPasswordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
 
 }

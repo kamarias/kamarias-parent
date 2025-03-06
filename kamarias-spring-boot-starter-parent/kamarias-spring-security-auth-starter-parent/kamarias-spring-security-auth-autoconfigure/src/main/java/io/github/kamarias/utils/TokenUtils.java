@@ -1,5 +1,7 @@
 package io.github.kamarias.utils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.kamarias.bean.LoginObject;
 import io.github.kamarias.exception.SecurityException;
 import io.github.kamarias.properties.TokenProperties;
@@ -45,9 +47,11 @@ public class TokenUtils {
     private final String SINGLE_KEY = "single_key::";
 
 
-    public final RedisTemplate redisTemplate;
+    private final RedisTemplate redisTemplate;
 
-    public final StringRedisTemplate stringRedisTemplate;
+    private final StringRedisTemplate stringRedisTemplate;
+
+    private final ObjectMapper objectMapper;
 
     /**
      * token 配置
@@ -59,9 +63,10 @@ public class TokenUtils {
      */
     private final long EXPIRED_VALUE = -2;
 
-    public TokenUtils(RedisTemplate redisTemplate, StringRedisTemplate stringRedisTemplate, TokenProperties tokenProperties) {
+    public TokenUtils(RedisTemplate redisTemplate, StringRedisTemplate stringRedisTemplate, ObjectMapper objectMapper, TokenProperties tokenProperties) {
         this.redisTemplate = redisTemplate;
         this.stringRedisTemplate = stringRedisTemplate;
+        this.objectMapper = objectMapper;
         this.tokenProperties = tokenProperties;
     }
 
@@ -143,7 +148,7 @@ public class TokenUtils {
      * @param <T> 继承UuidObject 的类
      * @return 返回生成key
      */
-    public <T extends LoginObject> String createSingleRedisToken(T o) {
+    private  <T extends LoginObject> String createSingleRedisToken(T o) {
         // 生成 jwt 密钥
         JwtBuilder jwtBuilder = Jwts.builder();
         String jwtPassword = jwtBuilder
@@ -165,7 +170,7 @@ public class TokenUtils {
      *
      * @return 移除令牌结果
      */
-    public boolean removeSingleRedisToken() {
+    private boolean removeSingleRedisToken() {
         LoginObject o = analyzeSingleRedisToken(LoginObject.class);
         return stringRedisTemplate.delete(loginKeyGenerator(o.getUuid())) && stringRedisTemplate.delete(singleKeyGenerator(o.getId()));
     }
@@ -176,7 +181,7 @@ public class TokenUtils {
      * @param str 令牌
      * @return 移除令牌结果
      */
-    public boolean removeSingleRedisToken(String str) {
+    private boolean removeSingleRedisToken(String str) {
         LoginObject o = analyzeSingleRedisToken(str, LoginObject.class);
         return stringRedisTemplate.delete(loginKeyGenerator(o.getUuid())) && stringRedisTemplate.delete(singleKeyGenerator(o.getId()));
     }
@@ -188,7 +193,7 @@ public class TokenUtils {
      * @param <T>    继承UuidObject的解析对象
      * @return 解析成功的对象
      */
-    public <T extends LoginObject> T analyzeSingleRedisToken(Class<T> tClass) {
+    private  <T extends LoginObject> T analyzeSingleRedisToken(Class<T> tClass) {
         T token = analyzeRedisToken(tClass);
         String uuid = stringRedisTemplate.opsForValue().get(singleKeyGenerator(token.getId()));
         if (token.getUuid().equals(uuid)) {
@@ -208,7 +213,7 @@ public class TokenUtils {
      * @param <T>    继承UuidObject的解析对象
      * @return 解析成功的对象
      */
-    public <T extends LoginObject> T analyzeSingleRedisToken(String str, Class<T> tClass) {
+    private <T extends LoginObject> T analyzeSingleRedisToken(String str, Class<T> tClass) {
         T token = analyzeRedisToken(str, tClass);
         String uuid = stringRedisTemplate.opsForValue().get(singleKeyGenerator(token.getId()));
         if (token.getUuid().equals(uuid)) {
@@ -227,7 +232,7 @@ public class TokenUtils {
      * @param <T> 继承UuidObject 的类
      * @return 返回生成key
      */
-    public <T extends LoginObject> String createRedisToken(T o) {
+    private  <T extends LoginObject> String createRedisToken(T o) {
         // 生成 jwt 密钥
         JwtBuilder jwtBuilder = Jwts.builder();
         String jwtPassword = jwtBuilder
@@ -236,9 +241,14 @@ public class TokenUtils {
                 .setId(o.getUuid())
                 .signWith(SignatureAlgorithm.HS256, tokenProperties.getSecret())
                 .compact();
-        // 存入缓存中
-        redisTemplate.opsForValue().set(loginKeyGenerator(o.getUuid()), o, tokenProperties.getExpireTime(), tokenProperties.getUnit());
-        return jwtPassword;
+        try {
+            String loginInfo = objectMapper.writeValueAsString(o);
+            // 存入缓存中
+            stringRedisTemplate.opsForValue().set(loginKeyGenerator(o.getUuid()), loginInfo, tokenProperties.getExpireTime(), tokenProperties.getUnit());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+     return jwtPassword;
     }
 
     /**
@@ -246,7 +256,7 @@ public class TokenUtils {
      *
      * @return 移除令牌结果
      */
-    public boolean removeRedisToken() {
+    private boolean removeRedisToken() {
         LoginObject o = analyzeRedisToken(LoginObject.class);
         return stringRedisTemplate.delete(loginKeyGenerator(o.getUuid()));
     }
@@ -257,7 +267,7 @@ public class TokenUtils {
      * @param str 令牌
      * @return 移除令牌结果
      */
-    public boolean removeRedisToken(String str) {
+    private boolean removeRedisToken(String str) {
         LoginObject o = analyzeRedisToken(str, LoginObject.class);
         return stringRedisTemplate.delete(loginKeyGenerator(o.getUuid()));
     }
@@ -269,7 +279,7 @@ public class TokenUtils {
      * @param <T>    继承UuidObject的解析对象
      * @return 解析成功的对象
      */
-    public <T extends LoginObject> T analyzeRedisToken(Class<T> tClass) {
+    private <T extends LoginObject> T analyzeRedisToken(Class<T> tClass) {
         String header = getHttpServletRequest().getHeader(tokenProperties.getAuthHeader());
         if (StringUtils.isEmpty(header)) {
             LOGGER.info("登录令牌已过期：授权请求头为空");
@@ -286,7 +296,7 @@ public class TokenUtils {
      * @param <T>    继承UuidObject的解析对象
      * @return 解析成功的对象
      */
-    public <T extends LoginObject> T analyzeRedisToken(String str, Class<T> tClass) {
+    private  <T extends LoginObject> T analyzeRedisToken(String str, Class<T> tClass) {
         String redisUuid;
         try {
             redisUuid = Jwts.parser()
@@ -325,7 +335,7 @@ public class TokenUtils {
      * @param <T> 继承UuidObject的泛型
      * @return 生成加密的加密字符串
      */
-    public <T extends LoginObject> String createJwtToken(T o) {
+    private  <T extends LoginObject> String createJwtToken(T o) {
         JwtBuilder jwtBuilder = Jwts.builder();
         return jwtBuilder
                 .setHeaderParam("typ", "JWT")
@@ -344,7 +354,7 @@ public class TokenUtils {
      * @param <T>    继承 LoginObject 的泛型
      * @return 解析成功的对象
      */
-    public <T extends LoginObject> T analyzeJwtToken(Class<T> tClass) {
+    private  <T extends LoginObject> T analyzeJwtToken(Class<T> tClass) {
         String header = getHttpServletRequest().getHeader(tokenProperties.getAuthHeader());
         if (StringUtils.isEmpty(header)) {
             LOGGER.info("登录令牌已过期：授权请求头为空");
@@ -361,7 +371,7 @@ public class TokenUtils {
      * @param <T>    继承 LoginObject 的泛型
      * @return 解析成功的对象
      */
-    public <T extends LoginObject> T analyzeJwtToken(String str, Class<T> tClass) {
+    private  <T extends LoginObject> T analyzeJwtToken(String str, Class<T> tClass) {
         Jws<Claims> claimsJws = null;
         try {
             claimsJws = Jwts.parser()
@@ -388,7 +398,7 @@ public class TokenUtils {
      * @param token 带前缀的 token
      * @return 返回不带前缀的 token
      */
-    public String removePrefix(String token) {
+    private String removePrefix(String token) {
         if (token.contains(tokenProperties.getAuthHeaderPrefix())) {
             return token.replace(tokenProperties.getAuthHeaderPrefix(), "");
         }
