@@ -22,9 +22,15 @@ public class TokenProperties implements Serializable {
     private String secret = "S4yHQTz2mvCi";
 
     /**
-     * 是否开启单浏览器登陆
+     * 是否开启redis存储token
+     */
+    private boolean enableRedis = true;
+
+    /**
+     * 是否开启单浏览器登陆（必须开启redis登录时，才能使用单浏览器登录）
      */
     private boolean singlePoint = false;
+
 
     /**
      * 授权请求头
@@ -94,6 +100,14 @@ public class TokenProperties implements Serializable {
 
     public String getAuthHeaderPrefix() {
         return authHeaderPrefix;
+    }
+
+    public boolean isEnableRedis() {
+        return enableRedis;
+    }
+
+    public void setEnableRedis(boolean enableRedis) {
+        this.enableRedis = enableRedis;
     }
 
     public void setAuthHeaderPrefix(String authHeaderPrefix) {

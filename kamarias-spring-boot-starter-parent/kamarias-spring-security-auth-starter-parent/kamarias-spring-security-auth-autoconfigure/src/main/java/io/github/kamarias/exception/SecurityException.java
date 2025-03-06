@@ -10,6 +10,10 @@ public class SecurityException extends RuntimeException {
 
     private Integer code;
 
+    public SecurityException(Throwable cause) {
+        super(cause);
+    }
+
     public SecurityException(String msg) {
         super(msg);
     }

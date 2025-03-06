@@ -1,6 +1,9 @@
 package io.github.kamarias.bean;
 
+import org.springframework.util.Assert;
+
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -23,12 +26,12 @@ public abstract class LoginObject implements Serializable {
     /**
      * 权限列表
      */
-    private Set<String> permissions;
+    private Set<String> permissions = new HashSet<>();
 
     /**
      * 角色列表
      */
-    private Set<String> roles;
+    private Set<String> roles = new HashSet<>();
 
     public String getId() {
         return id;
@@ -43,6 +46,7 @@ public abstract class LoginObject implements Serializable {
     }
 
     public void setPermissions(Set<String> permissions) {
+        Assert.notNull(permissions, "permissions is not allow null");
         this.permissions = permissions;
     }
 
@@ -51,6 +55,7 @@ public abstract class LoginObject implements Serializable {
     }
 
     public void setRoles(Set<String> roles) {
+        Assert.notNull(permissions, "roles is not allow null");
         this.roles = roles;
     }
 

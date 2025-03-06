@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -47,8 +48,6 @@ public class TokenUtils {
     private final String SINGLE_KEY = "single_key::";
 
 
-    private final RedisTemplate redisTemplate;
-
     private final StringRedisTemplate stringRedisTemplate;
 
     private final ObjectMapper objectMapper;
@@ -58,13 +57,7 @@ public class TokenUtils {
      */
     private final TokenProperties tokenProperties;
 
-    /**
-     * redis key 过期返回值
-     */
-    private final long EXPIRED_VALUE = -2;
-
-    public TokenUtils(RedisTemplate redisTemplate, StringRedisTemplate stringRedisTemplate, ObjectMapper objectMapper, TokenProperties tokenProperties) {
-        this.redisTemplate = redisTemplate;
+    public TokenUtils(StringRedisTemplate stringRedisTemplate, ObjectMapper objectMapper, TokenProperties tokenProperties) {
         this.stringRedisTemplate = stringRedisTemplate;
         this.objectMapper = objectMapper;
         this.tokenProperties = tokenProperties;
@@ -78,6 +71,10 @@ public class TokenUtils {
      * @return 返回值
      */
     public <T extends LoginObject> String createToken(T o) {
+        if (tokenProperties.isEnableRedis()){
+//            return createJwtToken(o);
+        }
+
         if (tokenProperties.isSinglePoint()) {
             Assert.notNull(o.getId(), "登录对象Id不能为空");
             return createSingleRedisToken(o);
@@ -148,7 +145,7 @@ public class TokenUtils {
      * @param <T> 继承UuidObject 的类
      * @return 返回生成key
      */
-    private  <T extends LoginObject> String createSingleRedisToken(T o) {
+    private <T extends LoginObject> String createSingleRedisToken(T o) {
         // 生成 jwt 密钥
         JwtBuilder jwtBuilder = Jwts.builder();
         String jwtPassword = jwtBuilder
@@ -158,8 +155,9 @@ public class TokenUtils {
                 .signWith(SignatureAlgorithm.HS256, tokenProperties.getSecret())
                 .compact();
         // 存入缓存中
-        ValueOperations<String, T> opsForValue = redisTemplate.opsForValue();
-        opsForValue.set(loginKeyGenerator(o.getUuid()), o, tokenProperties.getExpireTime(), tokenProperties.getUnit());
+        ValueOperations<String, String> opsForValue = stringRedisTemplate.opsForValue();
+
+        opsForValue.set(loginKeyGenerator(o.getUuid()), toJsonString(o), tokenProperties.getExpireTime(), tokenProperties.getUnit());
         // 设置登录绑定的uuid
         stringRedisTemplate.opsForValue().set(singleKeyGenerator(o.getId()), o.getUuid(), tokenProperties.getExpireTime(), tokenProperties.getUnit());
         return jwtPassword;
@@ -193,7 +191,7 @@ public class TokenUtils {
      * @param <T>    继承UuidObject的解析对象
      * @return 解析成功的对象
      */
-    private  <T extends LoginObject> T analyzeSingleRedisToken(Class<T> tClass) {
+    private <T extends LoginObject> T analyzeSingleRedisToken(Class<T> tClass) {
         T token = analyzeRedisToken(tClass);
         String uuid = stringRedisTemplate.opsForValue().get(singleKeyGenerator(token.getId()));
         if (token.getUuid().equals(uuid)) {
@@ -232,7 +230,7 @@ public class TokenUtils {
      * @param <T> 继承UuidObject 的类
      * @return 返回生成key
      */
-    private  <T extends LoginObject> String createRedisToken(T o) {
+    private <T extends LoginObject> String createRedisToken(T o) {
         // 生成 jwt 密钥
         JwtBuilder jwtBuilder = Jwts.builder();
         String jwtPassword = jwtBuilder
@@ -241,14 +239,9 @@ public class TokenUtils {
                 .setId(o.getUuid())
                 .signWith(SignatureAlgorithm.HS256, tokenProperties.getSecret())
                 .compact();
-        try {
-            String loginInfo = objectMapper.writeValueAsString(o);
-            // 存入缓存中
-            stringRedisTemplate.opsForValue().set(loginKeyGenerator(o.getUuid()), loginInfo, tokenProperties.getExpireTime(), tokenProperties.getUnit());
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-     return jwtPassword;
+        String loginInfo = toJsonString(o);
+        stringRedisTemplate.opsForValue().set(loginKeyGenerator(o.getUuid()), loginInfo, tokenProperties.getExpireTime(), tokenProperties.getUnit());
+        return jwtPassword;
     }
 
     /**
@@ -296,7 +289,7 @@ public class TokenUtils {
      * @param <T>    继承UuidObject的解析对象
      * @return 解析成功的对象
      */
-    private  <T extends LoginObject> T analyzeRedisToken(String str, Class<T> tClass) {
+    private <T extends LoginObject> T analyzeRedisToken(String str, Class<T> tClass) {
         String redisUuid;
         try {
             redisUuid = Jwts.parser()
@@ -309,21 +302,26 @@ public class TokenUtils {
             throw new SecurityException("登录令牌错误或已失效");
         }
         redisUuid = loginKeyGenerator(redisUuid);
-        long expireTime = redisTemplate.opsForValue().getOperations().getExpire(redisUuid);
-        if (expireTime == EXPIRED_VALUE) {
+        RedisOperations<String, String> operations =
+                stringRedisTemplate.opsForValue().getOperations();
+        Long expireTime = operations.getExpire(redisUuid);
+
+        // redis key 过期返回值
+        long expiredValue = -2;
+        if (Objects.nonNull(expireTime) && expireTime == expiredValue) {
             LOGGER.info("登录令牌已过期：令牌过期");
             throw new SecurityException("登录令牌已过期");
         }
-        ValueOperations<String, T> valueOperations = redisTemplate.opsForValue();
-        T t = valueOperations.get(redisUuid);
+        String loginObjectJson = stringRedisTemplate.opsForValue().get(redisUuid);
+        T t = toObject(loginObjectJson, tClass);
         if (Objects.isNull(t)) {
             LOGGER.info("登录令牌已过期：令牌过期");
             throw new SecurityException("登录令牌已过期");
         }
         if (tokenProperties.getRefreshDate() >= expireTime) {
             // 续期token
-            redisTemplate.delete(redisUuid);
-            redisTemplate.opsForValue().set(redisUuid, t, tokenProperties.getExpireTime(), tokenProperties.getUnit());
+            stringRedisTemplate.delete(redisUuid);
+            stringRedisTemplate.opsForValue().set(redisUuid, toJsonString(t), tokenProperties.getExpireTime(), tokenProperties.getUnit());
         }
         return t;
     }
@@ -335,7 +333,7 @@ public class TokenUtils {
      * @param <T> 继承UuidObject的泛型
      * @return 生成加密的加密字符串
      */
-    private  <T extends LoginObject> String createJwtToken(T o) {
+    private <T extends LoginObject> String createJwtToken(T o) {
         JwtBuilder jwtBuilder = Jwts.builder();
         return jwtBuilder
                 .setHeaderParam("typ", "JWT")
@@ -354,7 +352,7 @@ public class TokenUtils {
      * @param <T>    继承 LoginObject 的泛型
      * @return 解析成功的对象
      */
-    private  <T extends LoginObject> T analyzeJwtToken(Class<T> tClass) {
+    private <T extends LoginObject> T analyzeJwtToken(Class<T> tClass) {
         String header = getHttpServletRequest().getHeader(tokenProperties.getAuthHeader());
         if (StringUtils.isEmpty(header)) {
             LOGGER.info("登录令牌已过期：授权请求头为空");
@@ -371,7 +369,7 @@ public class TokenUtils {
      * @param <T>    继承 LoginObject 的泛型
      * @return 解析成功的对象
      */
-    private  <T extends LoginObject> T analyzeJwtToken(String str, Class<T> tClass) {
+    private <T extends LoginObject> T analyzeJwtToken(String str, Class<T> tClass) {
         Jws<Claims> claimsJws = null;
         try {
             claimsJws = Jwts.parser()
@@ -452,11 +450,57 @@ public class TokenUtils {
         return this.LOGIN_KEY + SINGLE_KEY + singleKey;
     }
 
+
+    /**
+     * 将对象转换为JSON字符串
+     *
+     * @param o   登录对象
+     * @param <T> 继承LoginObject的解析对象
+     * @return 返回转换后的json对象
+     */
+    private <T extends LoginObject> String toJsonString(T o) {
+        try {
+            return objectMapper.writeValueAsString(o);
+        } catch (JsonProcessingException e) {
+            LOGGER.error("Failed to convert the login object to JSON", e);
+            throw new SecurityException(e);
+        }
+    }
+
+
+    /**
+     * 将JSON字符串转换为对象
+     *
+     * @param json   登录对象Json
+     * @param tClass 继承LoginObject的解析对象
+     * @param <T>    继承LoginObject的解析对象
+     * @return 返回泛型对象
+     */
+    private <T extends LoginObject> T toObject(String json, Class<T> tClass) {
+        try {
+            return objectMapper.readValue(json, tClass);
+        } catch (JsonProcessingException e) {
+            LOGGER.error("Failed to convert the JSON to login object", e);
+            throw new SecurityException(e);
+        }
+    }
+
+
+    /**
+     * 获取http servlet request 请求对象
+     *
+     * @return 获取请求对象
+     */
     private HttpServletRequest getHttpServletRequest() {
         ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         return requestAttributes.getRequest();
     }
 
+    /**
+     * 获取http servlet response 响应对象
+     *
+     * @return 获取请求响应对象
+     */
     private HttpServletResponse getHttpServletResponse() {
         ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         return requestAttributes.getResponse();

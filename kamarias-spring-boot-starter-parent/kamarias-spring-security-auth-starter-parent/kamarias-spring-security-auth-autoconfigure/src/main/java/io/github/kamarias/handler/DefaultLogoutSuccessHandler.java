@@ -31,12 +31,14 @@ public class DefaultLogoutSuccessHandler implements LogoutSuccessHandler {
     @Override
     public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
         try {
-            tokenUtils.deleteToken();
+            boolean b = tokenUtils.deleteToken();
+            if (b) {
+                renderString(response, "{\"code\": 200, \"msg\": \"退出登录成功\"}");
+            }
         } catch (SecurityException e) {
 
         }
-
-        renderString(response, "{\"code\": 200, \"msg\": \"退出登录成功\"}");
+        renderString(response, "{\"code\": 500, \"msg\": \"退出登录异常\"}");
     }
 
 
