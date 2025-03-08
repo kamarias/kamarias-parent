@@ -14,7 +14,7 @@ import java.util.UUID;
 public abstract class LoginObject implements Serializable {
 
     /**
-     * 用户唯一Id
+     * 用户唯一Id（须保证每个系统用户唯一）
      */
     private String id;
 

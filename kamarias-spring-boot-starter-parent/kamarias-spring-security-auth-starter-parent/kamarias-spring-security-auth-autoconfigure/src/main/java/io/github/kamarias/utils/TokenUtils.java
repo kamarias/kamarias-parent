@@ -48,8 +48,14 @@ public class TokenUtils {
     private final String SINGLE_KEY = "single_key::";
 
 
+    /**
+     * redis操作模板
+     */
     private final StringRedisTemplate stringRedisTemplate;
 
+    /**
+     * json序列化
+     */
     private final ObjectMapper objectMapper;
 
     /**
@@ -71,7 +77,7 @@ public class TokenUtils {
      * @return 返回值
      */
     public <T extends LoginObject> String createToken(T o) {
-        if (tokenProperties.isEnableRedis()){
+        if (tokenProperties.isEnableRedis()) {
 //            return createJwtToken(o);
         }
 
