@@ -11,7 +11,7 @@ import java.util.UUID;
  * @author wangyuxing@gogpay.cn
  * @date 2023/2/23 9:53
  */
-public abstract class LoginObject implements Serializable {
+public class LoginObject implements Serializable {
 
     /**
      * 用户唯一Id（须保证每个系统用户唯一）
@@ -33,37 +33,40 @@ public abstract class LoginObject implements Serializable {
      */
     private Set<String> roles = new HashSet<>();
 
-    public String getId() {
+    public LoginObject() {
+    }
+
+    public final String getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public final void setId(String id) {
         this.id = id;
     }
 
-    public Set<String> getPermissions() {
+    public final Set<String> getPermissions() {
         return permissions;
     }
 
-    public void setPermissions(Set<String> permissions) {
+    public final void setPermissions(Set<String> permissions) {
         Assert.notNull(permissions, "permissions is not allow null");
         this.permissions = permissions;
     }
 
-    public Set<String> getRoles() {
+    public final Set<String> getRoles() {
         return roles;
     }
 
-    public void setRoles(Set<String> roles) {
+    public final void setRoles(Set<String> roles) {
         Assert.notNull(permissions, "roles is not allow null");
         this.roles = roles;
     }
 
-    public String getUuid() {
+    public final String getUuid() {
         return uuid;
     }
 
-    public void setUuid(String uuid) {
+    public final void setUuid(String uuid) {
         this.uuid = uuid;
     }
 

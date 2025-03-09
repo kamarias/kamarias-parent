@@ -8,14 +8,9 @@ import io.github.kamarias.properties.TokenProperties;
 import io.jsonwebtoken.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.redis.core.RedisOperations;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -38,17 +33,6 @@ public class TokenUtils {
     private static final Logger LOGGER = LoggerFactory.getLogger(TokenUtils.class);
 
     /**
-     * 登录key前缀
-     */
-    private final String LOGIN_KEY = "login_cache::";
-
-    /**
-     * 登录用户Id唯一值
-     */
-    private final String SINGLE_KEY = "single_key::";
-
-
-    /**
      * redis操作模板
      */
     private final StringRedisTemplate stringRedisTemplate;
@@ -69,49 +53,46 @@ public class TokenUtils {
         this.tokenProperties = tokenProperties;
     }
 
-    /**
-     * 创建token
-     *
-     * @param o   登录对象实体
-     * @param <T> 继承LoginObject对象
-     * @return 返回值
-     */
     public <T extends LoginObject> String createToken(T o) {
         if (tokenProperties.isEnableRedis()) {
-//            return createJwtToken(o);
+            return createRedisToken(o);
         }
-
-        if (tokenProperties.isSinglePoint()) {
-            Assert.notNull(o.getId(), "登录对象Id不能为空");
-            return createSingleRedisToken(o);
-        }
-        return createRedisToken(o);
+        return createJwtToken(o);
     }
 
     /**
-     * 移除token
+     * 移除token (仅支持 redis 存储时可以移除)
      *
      * @return 移除结果
      */
-    public boolean deleteToken() {
-        if (tokenProperties.isSinglePoint()) {
-            return removeSingleRedisToken();
+    public <T extends LoginObject> void deleteToken(Class<T> tClass) {
+        Jws<Claims> claimsJws = parseToken(getAuthToken());
+        Claims body = claimsJws.getBody();
+        String jsonString = toJsonString(body.get("user"));
+        T loginInfo = toObject(jsonString, tClass);
+        // 清理登录的key
+        if (tokenProperties.isEnableRedis()) {
+            if (tokenProperties.isSinglePoint()) {
+                stringRedisTemplate.delete(loginKeyGenerator(loginInfo.getId()));
+            }
+            if (!tokenProperties.isSinglePoint()) {
+                // 清理登录的随机值
+                stringRedisTemplate.delete(loginKeyGenerator(loginInfo.getUuid()));
+            }
         }
-        return removeRedisToken();
     }
 
-
-    /**
-     * 移除token
-     *
-     * @param str 移除的令牌
-     * @return 移除结果
-     */
-    public boolean deleteToken(String str) {
-        if (tokenProperties.isSinglePoint()) {
-            return removeSingleRedisToken(str);
+    private String getAuthToken() {
+        String token = getHttpServletRequest().getHeader(tokenProperties.getAuthHeader());
+        if (StringUtils.isEmpty(token)) {
+            LOGGER.info("登录令牌已过期：授权请求头为空");
+            throw new SecurityException(401, "请求未授权");
         }
-        return removeRedisToken(str);
+        if (token.contains(tokenProperties.getAuthHeaderPrefix())) {
+            return token.replace(tokenProperties.getAuthHeaderPrefix(), "");
+        }
+        LOGGER.info("请求前缀异常");
+        throw new SecurityException(401, "请求未授权");
     }
 
     /**
@@ -122,214 +103,108 @@ public class TokenUtils {
      * @return 解析结果
      */
     public <T extends LoginObject> T analyzeToken(Class<T> tClass) {
-        if (tokenProperties.isSinglePoint()) {
-            return analyzeSingleRedisToken(tClass);
-        }
-        return analyzeRedisToken(tClass);
+        return analyzeToken(getAuthToken(), tClass);
     }
 
     /**
      * 解析token
      *
-     * @param str    令牌
+     * @param token  令牌
      * @param tClass 需要序列化的类
      * @param <T>    继承 LoginObject 的类
      * @return 解析结果
      */
-    public <T extends LoginObject> T analyzeToken(String str, Class<T> tClass) {
-        if (tokenProperties.isSinglePoint()) {
-            return analyzeSingleRedisToken(str, tClass);
+    public <T extends LoginObject> T analyzeToken(String token, Class<T> tClass) {
+        Jws<Claims> claimsJws = parseToken(token);
+        Claims body = claimsJws.getBody();
+        Object userBody = body.get("user");
+        String jsonString = toJsonString(userBody);
+        T user = toObject(jsonString, tClass);
+        if (tokenProperties.isEnableRedis()) {
+            if (tokenProperties.isSinglePoint()) {
+                String redisToken = stringRedisTemplate.opsForValue().get(loginKeyGenerator(user.getId()));
+                if (redisToken != null) {
+                    if (!redisToken.equals(token)) {
+                        LOGGER.info("账户在其它地方登录");
+                        throw new SecurityException(401, "账户在其它地方登录");
+                    }
+                } else {
+                    LOGGER.info("登录信息已过期...");
+                    throw new SecurityException(401, "登录信息已过期");
+                }
+            } else {
+                if (!stringRedisTemplate.hasKey(loginKeyGenerator(user.getUuid()))) {
+                    LOGGER.info("登录信息已过期");
+                    throw new SecurityException(401, "登录信息已过期");
+                }
+            }
         }
-        return analyzeRedisToken(str, tClass);
-    }
+        renewalTokens(body, user);
+        return user;
 
-
-    /**
-     * 创建单点token
-     *
-     * @param o   生成的对象
-     * @param <T> 继承UuidObject 的类
-     * @return 返回生成key
-     */
-    private <T extends LoginObject> String createSingleRedisToken(T o) {
-        // 生成 jwt 密钥
-        JwtBuilder jwtBuilder = Jwts.builder();
-        String jwtPassword = jwtBuilder
-                .setHeaderParam("typ", "JWT")
-                .setHeaderParam("alg", "HS256")
-                .setId(o.getUuid())
-                .signWith(SignatureAlgorithm.HS256, tokenProperties.getSecret())
-                .compact();
-        // 存入缓存中
-        ValueOperations<String, String> opsForValue = stringRedisTemplate.opsForValue();
-
-        opsForValue.set(loginKeyGenerator(o.getUuid()), toJsonString(o), tokenProperties.getExpireTime(), tokenProperties.getUnit());
-        // 设置登录绑定的uuid
-        stringRedisTemplate.opsForValue().set(singleKeyGenerator(o.getId()), o.getUuid(), tokenProperties.getExpireTime(), tokenProperties.getUnit());
-        return jwtPassword;
     }
 
     /**
-     * 删除token令牌
+     * 生成token
      *
-     * @return 移除令牌结果
+     * @param token 继承UuidObject 的实体
+     * @return 生成加密的加密字符串
      */
-    private boolean removeSingleRedisToken() {
-        LoginObject o = analyzeSingleRedisToken(LoginObject.class);
-        return stringRedisTemplate.delete(loginKeyGenerator(o.getUuid())) && stringRedisTemplate.delete(singleKeyGenerator(o.getId()));
-    }
-
-    /**
-     * 删除token令牌
-     *
-     * @param str 令牌
-     * @return 移除令牌结果
-     */
-    private boolean removeSingleRedisToken(String str) {
-        LoginObject o = analyzeSingleRedisToken(str, LoginObject.class);
-        return stringRedisTemplate.delete(loginKeyGenerator(o.getUuid())) && stringRedisTemplate.delete(singleKeyGenerator(o.getId()));
-    }
-
-    /**
-     * 解析 redis
-     *
-     * @param tClass 序列化的类
-     * @param <T>    继承UuidObject的解析对象
-     * @return 解析成功的对象
-     */
-    private <T extends LoginObject> T analyzeSingleRedisToken(Class<T> tClass) {
-        T token = analyzeRedisToken(tClass);
-        String uuid = stringRedisTemplate.opsForValue().get(singleKeyGenerator(token.getId()));
-        if (token.getUuid().equals(uuid)) {
-            return token;
+    private Jws<Claims> parseToken(String token) {
+        Jws<Claims> claimsJws;
+        try {
+            claimsJws = Jwts.parser()
+                    .setSigningKey(tokenProperties.getSecret())
+                    .parseClaimsJws(token);
+        } catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | SignatureException |
+                 IllegalArgumentException ex) {
+            LOGGER.error("Failed to parse token", ex);
+            throw new SecurityException(401, "Failed to parse token");
         }
-        LOGGER.warn("当前登录账号已在其它地方登录");
-        // 移除之前登录的缓存key
-        stringRedisTemplate.delete(loginKeyGenerator(token.getUuid()));
-        throw new SecurityException("当前登录账号已在其它地方登录");
+        return claimsJws;
     }
 
     /**
-     * 解析 redis
+     * 续期令牌
      *
-     * @param str    密钥
-     * @param tClass 序列化的类
-     * @param <T>    继承UuidObject的解析对象
-     * @return 解析成功的对象
+     * @param body 上一次的密钥信息
+     * @param user 需要续期的用户对象
+     * @param <T>  继承登录对象的类
      */
-    private <T extends LoginObject> T analyzeSingleRedisToken(String str, Class<T> tClass) {
-        T token = analyzeRedisToken(str, tClass);
-        String uuid = stringRedisTemplate.opsForValue().get(singleKeyGenerator(token.getId()));
-        if (token.getUuid().equals(uuid)) {
-            return token;
+    private <T extends LoginObject> void renewalTokens(Claims body, T user) {
+        Date date = new Date(System.currentTimeMillis() + tokenProperties.getRefreshMilliseconds());
+        if (date.before(body.getExpiration())) {
+            return;
         }
-        LOGGER.warn("当前登录账号已在其它地方登录");
-        // 移除之前登录的缓存key
-        stringRedisTemplate.delete(loginKeyGenerator(token.getUuid()));
-        throw new SecurityException("当前登录账号已在其它地方登录");
+        String token = createToken(user);
+        // 响应头中添加新的请求头
+        getHttpServletResponse().addHeader("refresh_token", token);
     }
 
+
     /**
-     * 创建 token
+     * 创建redis存储的token
      *
-     * @param o   生成的对象
-     * @param <T> 继承UuidObject 的类
-     * @return 返回生成key
+     * @param o   需要登录的对象
+     * @param <T> 继承登录对象的类
+     * @return 返回创建的 token
      */
     private <T extends LoginObject> String createRedisToken(T o) {
-        // 生成 jwt 密钥
-        JwtBuilder jwtBuilder = Jwts.builder();
-        String jwtPassword = jwtBuilder
-                .setHeaderParam("typ", "JWT")
-                .setHeaderParam("alg", "HS256")
-                .setId(o.getUuid())
-                .signWith(SignatureAlgorithm.HS256, tokenProperties.getSecret())
-                .compact();
-        String loginInfo = toJsonString(o);
-        stringRedisTemplate.opsForValue().set(loginKeyGenerator(o.getUuid()), loginInfo, tokenProperties.getExpireTime(), tokenProperties.getUnit());
-        return jwtPassword;
-    }
-
-    /**
-     * 删除token令牌
-     *
-     * @return 移除令牌结果
-     */
-    private boolean removeRedisToken() {
-        LoginObject o = analyzeRedisToken(LoginObject.class);
-        return stringRedisTemplate.delete(loginKeyGenerator(o.getUuid()));
-    }
-
-    /**
-     * 删除token令牌
-     *
-     * @param str 令牌
-     * @return 移除令牌结果
-     */
-    private boolean removeRedisToken(String str) {
-        LoginObject o = analyzeRedisToken(str, LoginObject.class);
-        return stringRedisTemplate.delete(loginKeyGenerator(o.getUuid()));
-    }
-
-    /**
-     * 解析 redis
-     *
-     * @param tClass 序列化的类
-     * @param <T>    继承UuidObject的解析对象
-     * @return 解析成功的对象
-     */
-    private <T extends LoginObject> T analyzeRedisToken(Class<T> tClass) {
-        String header = getHttpServletRequest().getHeader(tokenProperties.getAuthHeader());
-        if (StringUtils.isEmpty(header)) {
-            LOGGER.info("登录令牌已过期：授权请求头为空");
-            throw new SecurityException("登录令牌已过期");
+        String jwtToken = createJwtToken(o);
+        // 存储登录key
+        if (tokenProperties.isSinglePoint()) {
+            // 单浏览器存储用户id
+            if (Objects.isNull(o.getId())) {
+                LOGGER.info("The user ID cannot be empty when logging in with a single browser, so set the user ID");
+                throw new SecurityException(401, "The user ID cannot be empty when logging in with a single browser, so set the user ID");
+            }
+            stringRedisTemplate.opsForValue().set(loginKeyGenerator(o.getId()), jwtToken, tokenProperties.getExpireTime(), tokenProperties.getUnit());
         }
-        return analyzeRedisToken(header, tClass);
-    }
-
-    /**
-     * 解析 redis
-     *
-     * @param str    密钥
-     * @param tClass 序列化的类
-     * @param <T>    继承UuidObject的解析对象
-     * @return 解析成功的对象
-     */
-    private <T extends LoginObject> T analyzeRedisToken(String str, Class<T> tClass) {
-        String redisUuid;
-        try {
-            redisUuid = Jwts.parser()
-                    .setSigningKey(tokenProperties.getSecret())
-                    .parseClaimsJws(removePrefix(str))
-                    .getBody().getId();
-        } catch (Exception e) {
-            // 移除redis 的缓存
-            LOGGER.info("登录令牌已过期：登录令牌解析错误");
-            throw new SecurityException("登录令牌错误或已失效");
+        if (!tokenProperties.isSinglePoint()) {
+            // 多浏览器存储随id
+            stringRedisTemplate.opsForValue().set(loginKeyGenerator(o.getUuid()), jwtToken, tokenProperties.getExpireTime(), tokenProperties.getUnit());
         }
-        redisUuid = loginKeyGenerator(redisUuid);
-        RedisOperations<String, String> operations =
-                stringRedisTemplate.opsForValue().getOperations();
-        Long expireTime = operations.getExpire(redisUuid);
-
-        // redis key 过期返回值
-        long expiredValue = -2;
-        if (Objects.nonNull(expireTime) && expireTime == expiredValue) {
-            LOGGER.info("登录令牌已过期：令牌过期");
-            throw new SecurityException("登录令牌已过期");
-        }
-        String loginObjectJson = stringRedisTemplate.opsForValue().get(redisUuid);
-        T t = toObject(loginObjectJson, tClass);
-        if (Objects.isNull(t)) {
-            LOGGER.info("登录令牌已过期：令牌过期");
-            throw new SecurityException("登录令牌已过期");
-        }
-        if (tokenProperties.getRefreshDate() >= expireTime) {
-            // 续期token
-            stringRedisTemplate.delete(redisUuid);
-            stringRedisTemplate.opsForValue().set(redisUuid, toJsonString(t), tokenProperties.getExpireTime(), tokenProperties.getUnit());
-        }
-        return t;
+        return jwtToken;
     }
 
     /**
@@ -352,108 +227,13 @@ public class TokenUtils {
     }
 
     /**
-     * 解析token
-     *
-     * @param tClass 需要解析的对象
-     * @param <T>    继承 LoginObject 的泛型
-     * @return 解析成功的对象
-     */
-    private <T extends LoginObject> T analyzeJwtToken(Class<T> tClass) {
-        String header = getHttpServletRequest().getHeader(tokenProperties.getAuthHeader());
-        if (StringUtils.isEmpty(header)) {
-            LOGGER.info("登录令牌已过期：授权请求头为空");
-            throw new SecurityException("登录令牌已过期");
-        }
-        return analyzeJwtToken(header, tClass);
-    }
-
-    /**
-     * 解析token
-     *
-     * @param str    token值
-     * @param tClass 需要解析的对象
-     * @param <T>    继承 LoginObject 的泛型
-     * @return 解析成功的对象
-     */
-    private <T extends LoginObject> T analyzeJwtToken(String str, Class<T> tClass) {
-        Jws<Claims> claimsJws = null;
-        try {
-            claimsJws = Jwts.parser()
-                    .setSigningKey(tokenProperties.getSecret())
-                    .parseClaimsJws(removePrefix(str));
-        } catch (Exception e) {
-            removeToken();
-        }
-        assert claimsJws != null;
-        Claims body = claimsJws.getBody();
-        Date expiration = body.getExpiration();
-        Object o = body.get("user");
-        T t = BeanUtils.instantiateClass(tClass);
-        BeanUtils.copyProperties(o, t);
-        if (expiredCheck(expiration)) {
-            renewalToken(t);
-        }
-        return t;
-    }
-
-    /**
-     * 校验请求前缀并移除 token 请求前缀
-     *
-     * @param token 带前缀的 token
-     * @return 返回不带前缀的 token
-     */
-    private String removePrefix(String token) {
-        if (token.contains(tokenProperties.getAuthHeaderPrefix())) {
-            return token.replace(tokenProperties.getAuthHeaderPrefix(), "");
-        }
-        throw new IllegalArgumentException("请求前缀异常");
-    }
-
-    /**
-     * 令牌是否需要续期
-     */
-    private boolean expiredCheck(Date expireDate) {
-        Date date = new Date(System.currentTimeMillis() + tokenProperties.getRefreshMilliseconds());
-        return !date.before(expireDate);
-    }
-
-    /**
-     * 续期令牌
-     */
-    private <T extends LoginObject> void renewalToken(T t) {
-        // 新token
-        String token = createJwtToken(t);
-        // 响应头中添加新的请求头
-        getHttpServletResponse().addHeader("refresh_token", token);
-    }
-
-    /**
-     * 过期令牌处理
-     */
-    private void removeToken() {
-        // 响应头中添加新的请求头
-        getHttpServletResponse().addHeader("refresh_token", "");
-        throw new SecurityException("登录令牌错误或已失效");
-    }
-
-    /**
      * 生成登录key
      *
      * @param uuid 登录uuid
      * @return 返回结果
      */
     private String loginKeyGenerator(String uuid) {
-        return this.LOGIN_KEY + uuid;
-    }
-
-    /**
-     * 生成单一key
-     *
-     * @param singleKey 单一key
-     * @return 返回结果
-     */
-    private String singleKeyGenerator(String singleKey) {
-        return this.LOGIN_KEY + SINGLE_KEY + singleKey;
+        return tokenProperties.getRedisStoragePath() + uuid;
     }
 
 
@@ -473,6 +253,20 @@ public class TokenUtils {
         }
     }
 
+    /**
+     * 将对象转换为JSON字符串
+     *
+     * @param o 登录对象
+     * @return 返回转换后的json对象
+     */
+    private String toJsonString(Object o) {
+        try {
+            return objectMapper.writeValueAsString(o);
+        } catch (JsonProcessingException e) {
+            LOGGER.error("Failed to convert the login object to JSON", e);
+            throw new SecurityException(e);
+        }
+    }
 
     /**
      * 将JSON字符串转换为对象

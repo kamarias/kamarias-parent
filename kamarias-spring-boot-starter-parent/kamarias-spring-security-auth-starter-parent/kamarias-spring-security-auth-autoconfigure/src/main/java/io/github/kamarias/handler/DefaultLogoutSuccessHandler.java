@@ -1,5 +1,6 @@
 package io.github.kamarias.handler;
 
+import io.github.kamarias.bean.LoginObject;
 import io.github.kamarias.exception.SecurityException;
 import io.github.kamarias.utils.TokenUtils;
 import org.slf4j.Logger;
@@ -31,14 +32,12 @@ public class DefaultLogoutSuccessHandler implements LogoutSuccessHandler {
     @Override
     public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
         try {
-            boolean b = tokenUtils.deleteToken();
-            if (b) {
-                renderString(response, "{\"code\": 200, \"msg\": \"退出登录成功\"}");
-            }
+            tokenUtils.deleteToken(LoginObject.class);
         } catch (SecurityException e) {
-
+            renderString(response, "{\"code\": 500, \"msg\": \"退出登录异常\"}");
+            return;
         }
-        renderString(response, "{\"code\": 500, \"msg\": \"退出登录异常\"}");
+        renderString(response, "{\"code\": 200, \"msg\": \"退出登录成功\"}");
     }
 
 

@@ -19,11 +19,20 @@ public class SecurityProperties {
      */
     private List<String> anonymous = Arrays.asList("/login");
 
+    private String loginOutPath = "/logout";
+
     /**
      * 静态资源访问白名单
      */
     private List<String> staticResPath = Arrays.asList("/*.html", "/**/*.html", "/**/*.css", "/**/*.js");
 
+    public String getLoginOutPath() {
+        return loginOutPath;
+    }
+
+    public void setLoginOutPath(String loginOutPath) {
+        this.loginOutPath = loginOutPath;
+    }
 
     public List<String> getAnonymous() {
         return anonymous;

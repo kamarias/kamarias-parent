@@ -27,10 +27,19 @@ public class TokenProperties implements Serializable {
     private boolean enableRedis = true;
 
     /**
+     * 登录key redis存储路径
+     */
+    private String redisStoragePath = "login_cache:";
+
+    /**
      * 是否开启单浏览器登陆（必须开启redis登录时，才能使用单浏览器登录）
      */
     private boolean singlePoint = false;
 
+    /**
+     * 续期请求头名称
+     */
+    private String renewalHeaderName = "refresh_token";
 
     /**
      * 授权请求头
@@ -80,6 +89,14 @@ public class TokenProperties implements Serializable {
 
     public String getSecret() {
         return secret;
+    }
+
+    public String getRedisStoragePath() {
+        return redisStoragePath;
+    }
+
+    public void setRedisStoragePath(String redisStoragePath) {
+        this.redisStoragePath = redisStoragePath;
     }
 
     public void setSecret(String secret) {
@@ -150,4 +167,11 @@ public class TokenProperties implements Serializable {
         this.unit = unit;
     }
 
+    public String getRenewalHeaderName() {
+        return renewalHeaderName;
+    }
+
+    public void setRenewalHeaderName(String renewalHeaderName) {
+        this.renewalHeaderName = renewalHeaderName;
+    }
 }

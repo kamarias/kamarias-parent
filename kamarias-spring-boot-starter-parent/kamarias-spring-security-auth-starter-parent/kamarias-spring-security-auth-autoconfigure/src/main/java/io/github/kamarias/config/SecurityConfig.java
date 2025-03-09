@@ -2,7 +2,6 @@ package io.github.kamarias.config;
 
 import io.github.kamarias.filter.DefaultJwtAuthTokenFilter;
 import io.github.kamarias.properties.SecurityProperties;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -10,16 +9,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.util.Assert;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
-
-import javax.servlet.Filter;
-import java.util.List;
 
 /**
  * @author wangyuxing@gogpay.cn
@@ -76,7 +69,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         // 未认证处理类
         http.exceptionHandling().authenticationEntryPoint(authenticationEntryPoint);
         // 退出登录成功处理器
-        http.logout().logoutSuccessHandler(logoutSuccessHandler);
+        http.logout().logoutUrl(securityProperties.getLoginOutPath()).logoutSuccessHandler(logoutSuccessHandler);
         // 授权过滤器
         http.addFilterAfter(defaultJwtAuthTokenFilter, UsernamePasswordAuthenticationFilter.class);
     }
