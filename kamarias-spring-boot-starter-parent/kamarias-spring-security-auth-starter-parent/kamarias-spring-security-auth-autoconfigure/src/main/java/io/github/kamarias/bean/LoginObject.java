@@ -3,6 +3,9 @@ package io.github.kamarias.bean;
 import org.springframework.util.Assert;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -22,6 +25,16 @@ public class LoginObject implements Serializable {
      * 用户缓存token key
      */
     private String uuid = UUID.randomUUID().toString();
+
+    /**
+     * 过期时间 （jwt只支持时间戳）
+     */
+    private Timestamp expireTime;
+
+    /**
+     * 刷新token过期时间（jwt只支持时间戳）
+     */
+    private Timestamp refreshExpireTime;
 
     /**
      * 权限列表
@@ -70,4 +83,19 @@ public class LoginObject implements Serializable {
         this.uuid = uuid;
     }
 
+    public Timestamp getExpireTime() {
+        return expireTime;
+    }
+
+    public void setExpireTime(Timestamp expireTime) {
+        this.expireTime = expireTime;
+    }
+
+    public Timestamp getRefreshExpireTime() {
+        return refreshExpireTime;
+    }
+
+    public void setRefreshExpireTime(Timestamp refreshExpireTime) {
+        this.refreshExpireTime = refreshExpireTime;
+    }
 }

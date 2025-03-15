@@ -17,7 +17,11 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Date;
+import java.sql.Date;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Objects;
 
 /**
@@ -53,11 +57,37 @@ public class TokenUtils {
         this.tokenProperties = tokenProperties;
     }
 
+    /**
+     * 创建token
+     *
+     * @param o   继承 LoginObject 的实体
+     * @param <T> 创建 token
+     * @return 返回 token
+     */
     public <T extends LoginObject> String createToken(T o) {
         if (tokenProperties.isEnableRedis()) {
             return createRedisToken(o);
         }
         return createJwtToken(o);
+    }
+
+    /**
+     * 刷新token (仅支持 redis 存储时可以刷新)
+     *
+     * @return 刷新结果
+     */
+    public <T extends LoginObject> String createRefreshToken(T o) {
+        JwtBuilder jwtBuilder = Jwts.builder();
+        Timestamp expireDateTime = new Timestamp(System.currentTimeMillis() + tokenProperties.getRefreshMilliseconds());
+        o.setRefreshExpireTime(expireDateTime);
+        return jwtBuilder
+                .setHeaderParam("typ", "JWT")
+                .setHeaderParam("alg", "HS256")
+                .claim("user", o)
+                .setExpiration(expireDateTime)
+                .setId(o.getUuid())
+                .signWith(SignatureAlgorithm.HS256, tokenProperties.getSecret())
+                .compact();
     }
 
     /**
@@ -133,15 +163,32 @@ public class TokenUtils {
                     throw new SecurityException(401, "登录信息已过期");
                 }
             } else {
-                if (!stringRedisTemplate.hasKey(loginKeyGenerator(user.getUuid()))) {
+                String redisToken = stringRedisTemplate.opsForValue().get(loginKeyGenerator(user.getUuid()));
+                if (!token.equals(redisToken)) {
                     LOGGER.info("登录信息已过期");
                     throw new SecurityException(401, "登录信息已过期");
                 }
             }
         }
-        renewalTokens(body, user);
         return user;
 
+    }
+
+
+    /**
+     * 解析token
+     *
+     * @param token  令牌
+     * @param tClass 需要序列化的类
+     * @param <T>    继承 LoginObject 的类
+     * @return 解析结果
+     */
+    public <T extends LoginObject> T analyzeRefreshToken(String token, Class<T> tClass) {
+        Jws<Claims> claimsJws = parseToken(token);
+        Claims body = claimsJws.getBody();
+        Object userBody = body.get("user");
+        String jsonString = toJsonString(userBody);
+        return toObject(jsonString, tClass);
     }
 
     /**
@@ -162,23 +209,6 @@ public class TokenUtils {
             throw new SecurityException(401, "Failed to parse token");
         }
         return claimsJws;
-    }
-
-    /**
-     * 续期令牌
-     *
-     * @param body 上一次的密钥信息
-     * @param user 需要续期的用户对象
-     * @param <T>  继承登录对象的类
-     */
-    private <T extends LoginObject> void renewalTokens(Claims body, T user) {
-        Date date = new Date(System.currentTimeMillis() + tokenProperties.getRefreshMilliseconds());
-        if (date.before(body.getExpiration())) {
-            return;
-        }
-        String token = createToken(user);
-        // 响应头中添加新的请求头
-        getHttpServletResponse().addHeader("refresh_token", token);
     }
 
 
@@ -216,11 +246,14 @@ public class TokenUtils {
      */
     private <T extends LoginObject> String createJwtToken(T o) {
         JwtBuilder jwtBuilder = Jwts.builder();
+        Timestamp expireDateTime = new Timestamp(System.currentTimeMillis() + tokenProperties.getExpiredMilliseconds());
+//        o.setExpireTime(expireDateTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
+        o.setExpireTime(expireDateTime);
         return jwtBuilder
                 .setHeaderParam("typ", "JWT")
                 .setHeaderParam("alg", "HS256")
                 .claim("user", o)
-                .setExpiration(new Date(System.currentTimeMillis() + tokenProperties.getExpiredMilliseconds()))
+                .setExpiration(expireDateTime)
                 .setId(o.getUuid())
                 .signWith(SignatureAlgorithm.HS256, tokenProperties.getSecret())
                 .compact();

@@ -67,9 +67,9 @@ public class TokenProperties implements Serializable {
     private TimeUnit unit = TimeUnit.MINUTES;
 
     /**
-     * 令牌剩余多少时间刷新（单位：秒）
+     * 令牌剩余多少时间刷新（单位：天）
      */
-    private long refreshDate = 300;
+    private long refreshDate = 7;
 
     /**
      * 获取令牌刷新的毫秒数
@@ -77,7 +77,7 @@ public class TokenProperties implements Serializable {
      * @return
      */
     public long getRefreshMilliseconds() {
-        return TimeUnit.SECONDS.toMillis(this.refreshDate);
+        return TimeUnit.DAYS.toMillis(this.refreshDate);
     }
 
     /**

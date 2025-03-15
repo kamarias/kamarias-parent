@@ -23,8 +23,8 @@ public class LoginUtils {
      * @param <T> 继承UuidObject的泛型
      * @return 返回登录的用户
      */
-    public <T extends LoginObject> T getLoginUser() {
-        return (T) tokenUtils.analyzeToken(LoginObject.class);
+    public <T extends LoginObject> T getLoginUser(Class<T> loginUserClass) {
+        return tokenUtils.analyzeToken(loginUserClass);
     }
 
     /**
@@ -34,8 +34,8 @@ public class LoginUtils {
      * @param <T> 继承UuidObject的泛型
      * @return 返回登录的用户
      */
-    public <T extends LoginObject> T getLoginUser(String str) {
-        return (T) tokenUtils.analyzeToken(str, LoginObject.class);
+    public <T extends LoginObject> T getLoginUser(String str, Class<T> loginUserClass) {
+        return (T) tokenUtils.analyzeToken(str, loginUserClass);
     }
 
 }
